@@ -1,0 +1,19 @@
+<voice emotion="serious" style="narration">Bonjour et bienvenue dans ce podcast spécial, où nous allons explorer les défis que rencontre la République démocratique du Congo en cette année 2025.</voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+2%">Nous sommes au cœur de l'Afrique, dans un pays riche en ressources naturelles, mais qui fait face à des risques de plus en plus importants liés à la technologie et à la sécurité alimentaire.</prosody>
+<voice emotion="neutral" style="narration">Selon des statistiques récentes, plus de 70% de la population congolaise vit en dessous du seuil de pauvreté, ce qui rend difficile l'accès à une alimentation équilibrée et à des technologies modernes.</voice>
+<break time="300ms"/>
+<emphasis>Et c'est là que commence le problème</emphasis>, car cette situation de vulnérabilité favorise la dépendance à l'égard des importations alimentaires, qui représentent aujourd'hui plus de 40% de la consommation totale du pays.
+<prosody rate="slow" pitch="-1%">C'est ce que nous a expliqué M. Léonard Mutombo, expert en sécurité alimentaire à l'Institut congolais de recherche agricole.</prosody>
+<voice emotion="quote" style="narration">"La situation est critique, car nous importons non seulement des denrées alimentaires, mais aussi des technologies qui nous permettent de les produire et de les distribuer. Nous sommes ainsi exposés à des risques de perturbation de la chaîne d'approvisionnement, qui peuvent avoir des conséquences catastrophiques pour la population."</voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+1%">Mais les défis ne s'arrêtent pas là. La République démocratique du Congo est également confrontée à des problèmes liés à la technologie, notamment en ce qui concerne la cybersécurité.</prosody>
+<emphasis>Des études ont montré que plus de 60% des entreprises congolaises ont subi des attaques cybernétiques au cours de l'année dernière</emphasis>, ce qui représente une menace importante pour l'économie du pays.
+<voice emotion="serious" style="narration">C'est pourquoi il est essentiel que les autorités prennent des mesures pour renforcer la sécurité alimentaire et la cybersécurité, afin de protéger la population et de promouvoir le développement durable du pays.</voice>
+<break time="300ms"/>
+<prosody rate="slow" pitch="+2%">Dans ce contexte, il est important de noter que la communauté internationale a un rôle à jouer pour aider la République démocratique du Congo à surmonter ces défis.</prosody>
+<voice emotion="neutral" style="narration">En effet, des organisations comme les Nations Unies et la Banque mondiale ont déjà lancé des initiatives pour soutenir le développement de l'agriculture et de la technologie en République démocratique du Congo.</voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+1%">En conclusion, la situation en République démocratique du Congo est complexe et nécessite une attention particulière de la part des autorités et de la communauté internationale.</prosody>
+<emphasis>Il est essentiel de prendre des mesures pour renforcer la sécurité alimentaire et la cybersécurité, afin de promouvoir le développement durable et de protéger la population.</emphasis>
+<voice emotion="serious" style="narration">Nous allons continuer à suivre cette situation de près et à vous tenir informés des développements futurs. Merci de nous avoir rejoint pour ce podcast spécial.</voice>

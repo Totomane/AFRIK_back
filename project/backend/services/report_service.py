@@ -1,4 +1,4 @@
-# services/report_service.py
+# backend/services/report_service.py
 import os
 import requests
 from dotenv import load_dotenv
@@ -23,65 +23,76 @@ def generate_text(prompt: str) -> str:
     Génère du texte via l'API Groq.
     """
     data = {
-        "model": "llama3-70b-8192",
+        "model": "llama-3.3-70b-versatile",  # ou "llama3-70b-8192-compat" si disponible
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 700
     }
-    response = requests.post(GROQ_URL, headers=HEADERS, json=data)
-
-    if response.status_code != 200:
-        raise RuntimeError(f"Erreur API Groq: {response.text}")
-
-    return response.json()["choices"][0]["message"]["content"]
+    try:
+        response = requests.post(GROQ_URL, headers=HEADERS, json=data)
+        if response.status_code != 200:
+            raise RuntimeError(f"Erreur API Groq: {response.text}")
+        return response.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        raise RuntimeError(f"Erreur génération texte Groq: {str(e)}") from e
 
 
 def generate_report_pdf(file_path: str, country: str, risks: list, year: int):
     """
-    Génère un PDF basé sur les risques, pays et année.
+    Génère un PDF Allianz-style :
+    - Page de garde
+    - 1 risque = 1 page
+    - Structure : Contexte / Impact / Recommandations
     """
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
     c = canvas.Canvas(file_path, pagesize=A4)
     width, height = A4
     margin = 2 * cm
-    y_position = height - margin
 
-    # Titre principal
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(margin, y_position, f"Rapport sur les risques pour {country} ({year})")
-    y_position -= 1 * cm
-    c.setFont("Helvetica", 10)
-    c.drawString(margin, y_position, f"Généré le {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-    y_position -= 1.5 * cm
+    # === Page de garde ===
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(width / 2, height - 6 * cm, f"Rapport des Risques {year}")
+    c.setFont("Helvetica", 14)
+    c.drawCentredString(width / 2, height - 8 * cm, f"Pays : {country}")
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(width / 2, height - 10 * cm, f"Généré le {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    c.showPage()
 
+    # === Une page par risque ===
     for risk in risks:
-        # Récupérer texte via Groq
         prompt = (
-            f"Rédige un rapport détaillé sur le risque '{risk}' pour {country} "
-            f"avec un objectif temps de {year}. Inclure tendances, impacts potentiels et recommandations."
+            f"Rédige un rapport structuré façon Allianz sur le risque '{risk}' en {country} pour {year}. "
+            f"Structure le texte en 3 parties claires avec titres en majuscules :\n"
+            f"1. CONTEXTE ET TENDANCES\n"
+            f"2. IMPACT SUR LES ENTREPRISES\n"
+            f"3. RECOMMANDATIONS ET MITIGATION\n"
+            f"Utilise un ton professionnel, analytique et synthétique."
         )
-        content = generate_text(prompt)
+        try:
+            content = generate_text(prompt)
+        except RuntimeError as e:
+            print(f"Erreur génération contenu pour '{risk}': {e}")
+            content = f"⚠️ Erreur génération contenu pour le risque '{risk}': {e}"
 
-        # Ajouter titre de section
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(margin, y_position, risk)
-        y_position -= 1 * cm
+        # === Titre de la page ===
+        c.setFont("Helvetica-Bold", 16)
+        c.drawCentredString(width / 2, height - 2 * cm, risk.upper())
+        y_position = height - 4 * cm
 
-        # Ajouter contenu
+        # === Contenu ===
         c.setFont("Helvetica", 11)
         for line in content.split("\n"):
+            if not line.strip():
+                y_position -= 0.4 * cm
+                continue
             wrapped_line = c.beginText(margin, y_position)
             wrapped_line.setFont("Helvetica", 11)
-            wrapped_line.textLine(line)
+            wrapped_line.textLine(line.strip())
             c.drawText(wrapped_line)
-            y_position -= 0.5 * cm
+            y_position -= 0.6 * cm
 
-            # Saut de page si on atteint le bas
-            if y_position < margin:
-                c.showPage()
-                y_position = height - margin
-
-        y_position -= 1 * cm  # Espacement après chaque section
+        c.showPage()
 
     c.save()
+    print(f"=== PDF généré: {file_path} ===")
     return file_path

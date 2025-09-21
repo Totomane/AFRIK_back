@@ -36,9 +36,7 @@ class ReportRequestSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReportGenerationSerializer(serializers.Serializer):
-    countries = serializers.ListField(child=serializers.CharField())
-    risk_categories = serializers.ListField(child=serializers.CharField())
-    start_date = serializers.DateField()
-    end_date = serializers.DateField()
-    forecast_horizon = serializers.IntegerField(min_value=1, max_value=365)
-    format = serializers.ChoiceField(choices=['pdf', 'docx'], default='pdf')
+    country = serializers.CharField()                  # "France"
+    risks = serializers.ListField(child=serializers.CharField())  # ["R1", "R2"]
+    year = serializers.IntegerField()                 # 2026
+    format = serializers.ChoiceField(choices=["pdf", "docx"], default="pdf") 

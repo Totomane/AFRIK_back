@@ -1,0 +1,19 @@
+<voice emotion="serious" style="narration">Bonjour et bienvenue dans ce nouveau numéro de notre émission consacrée aux défis mondiaux. Aujourd'hui, nous allons vous emmener en Éthiopie, un pays en pleine croissance, mais qui fait face à des risques importants, notamment économiques et liés à l'eau. Nous allons explorer ces défis et essayer de comprendre comment ils impactent la vie quotidienne des Éthiopiens.</voice>
+<break time="500ms"/>
+
+<prosody rate="medium" pitch="+2%">L'Éthiopie, avec ses plus de 115 millions d'habitants, est l'un des pays les plus peuplés d'Afrique. Selon les statistiques, le pays a connu une croissance économique impressionnante ces dernières années, avec un taux de croissance moyen de 8% par an entre 2000 et 2019. Cependant, cette croissance est menacée par des risques économiques tels que l'inflation, le chômage et la dépendance aux importations.</prosody>
+<emphasis>En effet, l'inflation a atteint 20% en 2022, ce qui a réduit le pouvoir d'achat des Éthiopiens et a augmenté la pauvreté.</emphasis>
+<break time="300ms"/>
+
+<voice emotion="concerned" style="narration">Mais les risques ne s'arrêtent pas là. L'accès à l'eau potable est également un problème majeur en Éthiopie. Selon l'Organisation des Nations Unies, seulement 40% de la population a accès à l'eau potable, ce qui signifie que plus de 60 millions de personnes n'ont pas accès à cette ressource essentielle.</voice>
+<break time="500ms"/>
+
+<prosody rate="slow" pitch="-1%">Nous avons rencontré Mme Amina, une habitante d'Addis-Abeba, qui nous a confié : "L'eau est un problème quotidien pour nous. Nous devons souvent marcher plusieurs kilomètres pour trouver de l'eau potable, et même alors, nous ne sommes pas sûrs de sa qualité." Elle a ajouté : "C'est un cercle vicieux, car sans eau potable, nous sommes plus susceptibles de tomber malades, ce qui nous empêche de travailler et de subvenir aux besoins de nos familles."</prosody>
+<break time="300ms"/>
+
+<voice emotion="neutral" style="narration">Les experts estiment que la situation pourrait s'aggraver si des mesures concrètes ne sont pas prises pour améliorer l'accès à l'eau potable et pour diversifier l'économie éthiopienne. Le Dr Tadesse, un économiste éthiopien, a déclaré : "Il est essentiel que le gouvernement investisse dans les infrastructures hydrauliques et dans la formation de la population pour améliorer la productivité et la compétitivité du pays."</voice>
+<break time="500ms"/>
+
+<prosody rate="medium" pitch="+1%">En conclusion, l'Éthiopie est un pays qui offre des opportunités de croissance et de développement, mais qui est également confronté à des risques importants. Il est essentiel que les autorités éthiopiennes et la communauté internationale travaillent ensemble pour relever ces défis et améliorer la vie quotidienne des Éthiopiens. Nous espérons que cette émission vous a permis de mieux comprendre la situation en Éthiopie et nous vous remercions de nous avoir rejoint pour cette édition de notre podcast.</prosody>
+<voice emotion="serious" style="narration">Nous vous donnons rendez-vous pour notre prochaine émission, où nous explorerons d'autres défis mondiaux et nous essaierons de trouver des solutions pour un avenir plus durable.</voice>
+<break time="500ms"/>
