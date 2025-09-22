@@ -1,0 +1,20 @@
+<voice emotion="serious" style="narration">Bonjour et bienvenue dans ce podcast consacré à la situation géopolitique et financière de l'Éthiopie en 2025.</voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+2%"> À quelques milliers de kilomètres de nos frontières, un pays en pleine mutation fait face à des défis majeurs qui pourraient avoir des répercussions sur la stabilité de la région.</prosody>
+<voice emotion="serious" style="narration"> L'Éthiopie, avec ses plus de 120 millions d'habitants, est un acteur clé dans la Corne de l'Afrique, mais elle est également confrontée à des risques géopolitiques et financiers qui menacent son développement.</voice>
+<break time="300ms"/>
+<emphasis> Les tensions avec les pays voisins, en particulier l'Érythrée et le Soudan, pourraient dégénérer en conflits ouverts, avec des conséquences catastrophiques pour la population civile.</emphasis>
+<prosody rate="slow" pitch="-1%"> Selon des experts, comme le Dr Abdoulaye Bathily, spécialiste de la région, "la situation est explosive et nécessite une attention immédiate de la part de la communauté internationale pour prévenir une nouvelle vague de violence".</prosody>
+<break time="500ms"/>
+<voice emotion="neutral" style="narration">Sur le plan financier, l'Éthiopie est également vulnérable, avec un taux d'inflation de 15% en 2025, selon les données de la Banque mondiale.</voice>
+<prosody rate="medium" pitch="+1%"> Cela représente une augmentation de 5% par rapport à l'année précédente, ce qui pèse lourdement sur le pouvoir d'achat des Éthiopiens, déjà très faible.</prosody>
+<emphasis> Le fossé entre les riches et les pauvres s'élargit, et les inégalités sociales pourraient dégénérer en troubles internes.</emphasis>
+<break time="300ms"/>
+<prosody rate="slow" pitch="-1%"> Comme le souligne le directeur général de la Banque africaine de développement, Akinwumi Adesina, "l'Éthiopie a besoin d'un soutien financier et technique pour renforcer son économie et assurer un développement équitable".</prosody>
+<voice emotion="serious" style="narration">En conclusion, la situation en Éthiopie est complexe et exige une attention particulière de la part de la communauté internationale.</voice>
+<break time="500ms"/>
+<emphasis> Les risques géopolitiques et financiers sont réels, mais avec une coopération internationale et des efforts concertés, il est possible de renforcer la stabilité et la croissance économique de ce pays clé de la Corne de l'Afrique.</emphasis>
+<prosody rate="medium" pitch="+2%"> Nous devons nous mobiliser pour soutenir l'Éthiopie dans cette période difficile et œuvrer pour un avenir plus stable et plus prospère pour tous.</prosody>
+<voice emotion="neutral" style="narration">Merci de nous avoir rejoints pour cet épisode de notre podcast.</voice>
+<break time="300ms"/>
+<prosody rate="slow" pitch="-1%"> Nous vous souhaitons à la prochaine.</prosody>

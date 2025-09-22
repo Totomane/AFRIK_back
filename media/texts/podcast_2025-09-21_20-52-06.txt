@@ -1,0 +1,15 @@
+<voice emotion="serious" style="narration"> Bienvenue dans ce nouveau numéro de notre émission, consacré aux défis qui menacent le Maroc en cette année 2025. </voice>
+<break time="500ms"/>
+<voice emotion="serious" style="narration"> Nous allons vous emmener dans un voyage à travers les risques économiques et les catastrophes naturelles qui pèsent sur ce pays stratégique du Maghreb. </voice>
+<prosody rate="medium" pitch="+2%"> Avec une croissance économique en berne, le Maroc doit faire face à des défis de taille, selon les derniers rapports de la Banque mondiale. </prosody>
+<voice emotion="neutral" style="citation"> "Le produit intérieur brut marocain devrait connaître une baisse de 2,5% en 2025, principalement due à la sécheresse et à la chute des prix des matières premières", déclare M. Ahmed Réda Chami, économiste en chef à la Banque mondiale pour la région MENA. </voice>
+<break time="500ms"/>
+<prosody rate="slow" pitch="-1%"> Mais les défis économiques ne sont pas les seuls à menacer la stabilité du Maroc. Les catastrophes naturelles, telles que les séismes et les inondations, représentent également une menace importante. </prosody>
+<emphasis> En effet, selon les données de l'Institut national de géophysique, le Maroc est situé sur une zone de faille sismique active, avec plus de 200 séismes enregistrés en 2024 seul. </emphasis>
+<voice emotion="concerned" style="narration"> Les conséquences de ces cataclysmes pourraient être dévastatrices, avec des pertes humaines et matérielles considérables. </voice>
+<prosody rate="medium" pitch="+1%"> "Il est essentiel que les autorités marocaines prennent des mesures pour renforcer la résilience du pays face aux catastrophes naturelles, notamment en améliorant les systèmes d'alerte précoce et en renforçant les infrastructures", souligne Mme Fatima Zahra Laânigri, ministre de l'Énergie, des Mines et de l'Environnement. </prosody>
+<break time="1000ms"/>
+<voice emotion="serious" style="narration"> En conclusion, le Maroc est confronté à des défis économiques et naturels qui requièrent une attention particulière. </voice>
+<emphasis> Il est crucial que les décideurs politiques et économiques marocains prennent des mesures concertées pour atténuer ces risques et assurer un avenir plus sûr pour le pays. </emphasis>
+<prosody rate="slow" pitch="-1%"> Nous vous remercions de nous avoir rejoint pour cette émission, et nous vous invitons à suivre nos prochains numéros pour rester informé sur les actualités du Maroc et de la région. </prosody>
+<voice emotion="neutral" style="narration"> Au revoir, et à bientôt. </voice>
