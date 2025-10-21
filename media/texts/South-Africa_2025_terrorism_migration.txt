@@ -1,0 +1,19 @@
+<voice emotion="serious" style="narration"> Bienvenue dans ce numéro spécial de notre podcast, consacré aux défis de sécurité que rencontre l'Afrique du Sud en cette année 2025. </voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+2%"> Nous allons vous emmener dans un voyage à travers les risques et les menaces qui pèsent sur ce pays, situé à la pointe de l'Afrique, où les enjeux de migration et de terrorisme sont plus préoccupants que jamais. </prosody>
+<voice emotion="serious" style="narration"> Selon les derniers chiffres de l'Institut de recherche sur la sécurité de Johannesburg, le nombre d'actes terroristes a augmenté de 25% ces cinq dernières années, avec plus de 500 attaques recensées en 2024 alone. </voice>
+<break time="300ms"/>
+<emphasis> Mais quels sont les facteurs qui contribuent à cette montée de la violence ? </emphasis>
+<prosody rate="slow" pitch="-1%"> Les experts estiment que la pauvreté, le chômage et les inégalités sociales sont autant de facteurs qui poussent les jeunes à rejoindre les groupes terroristes. </prosody>
+<voice emotion="neutral" style="quote"> Comme le souligne le professeur Mpho Tshabalala, spécialiste de la sécurité à l'Université du Witwatersrand, "les groupes terroristes exploitent les frustrations et les désespoirs de la jeunesse, en leur promettant un avenir radieux et une cause à défendre". </voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+1%"> Mais l'Afrique du Sud n'est pas seule face à ces défis. La migration irrégulière est également un enjeu majeur, avec plus de 200 000 migrants en situation irrégulière recensés en 2024, selon les données de l'Agence des Nations unies pour les réfugiés. </prosody>
+<emphasis> Et quels sont les risques pour les migrants eux-mêmes ? </emphasis>
+<voice emotion="concerned" style="narration"> Les conditions de voyage sont souvent dramatiques, avec des centaines de migrants qui perdent la vie en mer ou dans le désert. Les réseaux de trafic d'êtres humains profitent de la vulnérabilité de ces personnes, les soumettant à des conditions de vie inhumaines. </voice>
+<break time="300ms"/>
+<prosody rate="slow" pitch="+0%"> Selon Mme Nandi Mngoma, coordinatrice régionale de l'Organisation internationale pour les migrations, "les migrants sont souvent contraints de quitter leur pays d'origine à cause de la violence, de la pauvreté ou de la persécution, et ils ont droit à notre protection et à notre soutien". </prosody>
+<voice emotion="serious" style="narration"> En conclusion, l'Afrique du Sud est confrontée à des défis de sécurité importants, avec la montée du terrorisme et la migration irrégulière. </voice>
+<break time="500ms"/>
+<emphasis> Mais il est essentiel de rappeler que ces phénomènes sont globaux et nécessitent une réponse internationale coordonnée. </emphasis>
+<prosody rate="medium" pitch="+2%"> Nous devons travailler ensemble pour lutter contre ces menaces, en protégeant les droits de l'homme, en soutenant les communautés vulnérables et en renforçant la coopération internationale. </prosody>
+<voice emotion="neutral" style="narration"> Nous vous remercions d'avoir écouté ce numéro spécial de notre podcast, et nous vous souhaitons une bonne fin de journée. </voice>

@@ -1,0 +1,14 @@
+<voice emotion="serious" style="narration">Bonjour et bienvenue dans ce nouveau épisode de notre émission, consacré aux défis économiques et environnementaux que rencontre l'Algérie en cette année 2026.</voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+2%"> Nous allons aujourd'hui aborder un sujet crucial pour l'avenir de ce pays maghrébin : la gestion de l'eau et ses implications économiques.</prosody>
+<voice emotion="serious" style="narration">L'Algérie, comme de nombreux pays du monde, fait face à des défis importants en matière de ressources hydriques. Selon les chiffres du ministère des Ressources en eau, la consommation d'eau par habitant est en constante augmentation, avec une moyenne de 150 litres par jour, alors que les précipitations ont baissé de 20% ces dernières années.</voice>
+<break time="500ms"/>
+<emphasis>Les conséquences sont alarmantes</emphasis> : les nappes phréatiques sont surexploitées, les cours d'eau sont asséchés et les sols sont dégradés. Le Dr. Mohamed Boudraa, expert en gestion de l'eau à l'Université d'Alger, nous explique : 
+<prosody rate="slow" pitch="-1%">« La situation est critique, nous sommes à la limite de la viabilité de nos ressources. Il est essentiel que nous prenions des mesures drastiques pour économiser l'eau et investir dans des technologies de récupération et de recyclage ».</prosody>
+<voice emotion="serious" style="narration">Mais les enjeux ne sont pas seulement environnementaux, ils sont aussi économiques. L'agriculture, qui représente près de 15% du PIB algérien, est fortement dépendante de l'eau. Une étude récente de la Banque mondiale estime que les pertes économiques liées à la dégradation des ressources en eau pourraient atteindre 3% du PIB d'ici 2030.</voice>
+<break time="500ms"/>
+<prosody rate="medium" pitch="+1%">Face à ces défis, le gouvernement algérien a annoncé un plan d'investissement de 10 milliards de dinars pour améliorer la gestion de l'eau et développer des infrastructures de dessalement et de traitement des eaux usées.</prosody>
+<emphasis>C'est un début, mais il faut aller plus loin</emphasis>. Les experts estiment qu'il faudrait au moins doubler cet investissement pour répondre aux besoins réels du pays. Le défi est de taille, mais il est possible de le relever si nous agissons maintenant et de manière concertée.
+<voice emotion="serious" style="narration">En conclusion, la situation de la gestion de l'eau en Algérie est préoccupante et nécessite une action immédiate. Les enjeux économiques et environnementaux sont considérables, mais avec une volonté politique forte et des investissements ciblés, il est possible de construire un avenir plus durable pour les générations futures.</voice>
+<break time="500ms"/>
+<prosody rate="slow" pitch="-1%">Nous vous remercions de nous avoir rejoints pour cet épisode. N'oubliez pas de nous suivre pour rester informé sur les grands défis de notre temps.</prosody>
