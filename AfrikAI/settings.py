@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-# -----------------------
+# ----------------------
 # Applications installées
 # -----------------------
 INSTALLED_APPS = [
@@ -26,6 +26,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api',
     'reports',
+    "voice",  
+    "oauth",
+    "channels",
 ]
 
 # -----------------------
@@ -45,6 +48,7 @@ MIDDLEWARE = [
 # -----------------------
 # CORS
 # -----------------------
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
@@ -72,6 +76,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'AfrikAI.wsgi.application'
+ASGI_APPLICATION = "AfrikAI.asgi:application"
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 # -----------------------
 # Base de données
@@ -114,12 +120,36 @@ USE_TZ = True
 # Static & Media
 # -----------------------
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'voice', 'static'),  # ✅ include the voice static path
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# VOICECMD_PATH = os.path.join(BASE_DIR, "voicecmd")  # ❌ Removed - app doesn't exist
+
 # -----------------------
 # Auto field par défaut
 # -----------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# -----------------------
+# OAuth Configuration
+# -----------------------
+# YouTube OAuth
+YOUTUBE_CLIENT_ID = os.environ.get('YOUTUBE_CLIENT_ID', '')
+YOUTUBE_CLIENT_SECRET = os.environ.get('YOUTUBE_CLIENT_SECRET', '')
+
+# LinkedIn OAuth
+LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID', '')
+LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET', '')
+
+# X (Twitter) OAuth
+X_CLIENT_ID = os.environ.get('X_CLIENT_ID', '')
+X_CLIENT_SECRET = os.environ.get('X_CLIENT_SECRET', '')
+
+# Spotify OAuth
+SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID', '')
+SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET', '')

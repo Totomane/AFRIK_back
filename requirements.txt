@@ -1,19 +1,96 @@
-asgiref==3.9.1
-certifi==2025.8.3
-charset-normalizer==3.4.3
-Django==5.2.6
-django-cors-headers==4.9.0
-djangorestframework==3.16.1
-docopt==0.6.2
-gunicorn==23.0.0
-idna==3.10
-packaging==25.0
-pillow==11.3.0
-pipreqs==0.4.13
-python-dotenv==1.1.1
-reportlab==4.4.3
-requests==2.32.5
-sqlparse==0.5.3
-tzdata==2025.2
-urllib3==2.5.0
-yarg==0.1.10
+# Core Django backend
+authlib==1.6.5
+celery
+Django>=5.0
+django-cors-headers>=4.0.0
+djangorestframework>=3.15.0
+spacy>=3.5
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0.tar.gz
+
+# Voice processing (Windows-compatible - no Rust required)
+soundfile                # ✅ Used in voice/views.py and voice/service.py
+# huggingface-hub==0.24.5  # ❌ Only needed for DIA TTS - not currently working
+numpy                    # ✅ Used in voice processing and data analysis
+scipy                    # ✅ Used for scientific computing
+
+# TTS (Dia model) - Currently not working due to dependency conflicts
+# sentencepiece           # ❌ Only needed for DIA TTS 
+# accelerate              # ❌ Only needed for DIA TTS
+# safetensors             # ❌ Only needed for DIA TTS
+
+# Core functionality
+requests                 # ✅ Used for API calls (Groq, World Bank, ElevenLabs)
+python-multipart         # ✅ Used for file uploads in Django
+
+# Voice recognition - Currently causing dependency conflicts  
+faster-whisper==1.0.1  # ❌ Requires ctranslate2, causing issues on Windows
+ctranslate2>=4    # ❌ Requires Rust compilation, causing conflicts
+ffmpeg-python           # ✅ Used for audio conversion in podcast_generator.py
+# pydub                 # ❌ Replaced with soundfile - pydub has Python 3.13 compatibility issues (audioop)
+
+
+# Core Django and web server requirements
+# annotated-types==0.7.0      # ❌ Pydantic dependency - not using complex validation
+# anyio==4.10.0               # ❌ Async I/O - not using async patterns extensively  
+asgiref==3.9.1               # ✅ Required by Django for ASGI compatibility
+# boto3==1.35.86              # ❌ AWS SDK - not using AWS services currently
+# botocore==1.35.86           # ❌ AWS core - not using AWS services currently
+channels==4.1.0              # ✅ Used for WebSocket support in voice system
+# uvicorn==0.30.6             # ❌ ASGI server - using Django dev server
+daphne==4.1.2                # ✅ ASGI server for Django Channels
+certifi==2025.8.3            # ✅ SSL certificates for HTTPS requests
+# cffi==2.0.0                 # ❌ Foreign function interface - not needed
+charset-normalizer==3.4.3    # ✅ Used by requests library
+# click==8.1.8                # ❌ CLI library - not building CLI tools
+# colorama==0.4.6             # ❌ Terminal colors - not needed for backend
+# distro==1.9.0               # ❌ Linux distribution info - not needed
+# django-storages==1.14.4     # ❌ Cloud storage backends - using local storage
+# docopt==0.6.2               # ❌ Command line parsing - not needed
+# dotenv==0.9.9               # ❌ Old version - using python-dotenv instead
+# ffmpeg==1.4                 # ❌ Duplicate - using ffmpeg-python instead
+# filelock==3.20.0            # ❌ File locking - not needed
+# fsspec==2025.9.0            # ❌ File system spec - not needed
+# git-filter-repo==2.47.0     # ❌ Git tool - not needed in production
+gunicorn==23.0.0             # ✅ Production WSGI server
+h11==0.16.0                  # ✅ HTTP/1.1 implementation (httpx dependency)
+httpcore==1.0.9              # ✅ HTTP core library (httpx dependency)
+# httpx==0.28.1               # ❌ Alternative to requests - not used
+idna==3.10                   # ✅ Internationalized domain names (requests dependency)
+# Jinja2==3.1.6               # ❌ Template engine - Django has its own
+# jiter==0.11.0               # ❌ JSON iterator - not needed
+# jmespath==1.0.1             # ❌ JSON query language - not used
+# llvmlite==0.45.1            # ❌ LLVM bindings - not needed
+# MarkupSafe==3.0.3           # ❌ Jinja2 dependency - not using Jinja2
+# more-itertools==10.8.0      # ❌ Iterator utilities - not needed
+# mpmath==1.3.0               # ❌ Math library - not doing complex math
+# networkx==3.5               # ❌ Graph library - not needed
+# numba==0.62.1               # ❌ JIT compiler - not doing heavy computation
+
+# API and external services
+# openai==1.108.0             # ❌ OpenAI API - using Groq instead
+pillow==11.3.0               # ✅ Image processing library
+# pipreqs==0.4.13             # ❌ Development tool - not needed in production
+# psycopg2-binary==2.9.10     # ❌ PostgreSQL adapter - using SQLite
+# pycparser==2.23             # ❌ C parser - not needed
+# pydantic==2.11.9            # ❌ Data validation - not using complex validation
+# pydantic_core==2.33.2       # ❌ Pydantic core - not using pydantic
+python-dateutil==2.9.0.post0 # ✅ Date utilities used throughout backend
+python-dotenv==1.1.1        # ✅ Environment variables management
+# regex==2025.10.23           # ❌ Advanced regex - not needed
+reportlab==4.4.3            # ✅ PDF generation - heavily used in report_service.py
+requests==2.32.5            # ✅ HTTP requests - core functionality
+# s3transfer==0.10.4          # ❌ S3 transfer - not using AWS
+scipy==1.16.3               # ✅ Scientific computing - used in voice processing
+# setuptools==80.9.0          # ❌ Package building - not needed at runtime
+six==1.17.0                 # ✅ Python 2/3 compatibility (legacy dependency)
+# sniffio==1.3.1              # ❌ Async library detection - not needed
+# sounddevice==0.5.3          # ❌ Audio device access - not using direct device access
+sqlparse==0.5.3             # ✅ SQL parsing - Django dependency
+# sympy==1.14.0               # ❌ Symbolic math - not needed
+# tiktoken==0.12.0            # ❌ OpenAI tokenizer - not using OpenAI
+# tqdm==4.67.1                # ❌ Progress bars - not needed in backend
+# typing-inspection==0.4.1    # ❌ Type inspection - not needed
+# typing_extensions==4.15.0   # ❌ Type extensions - not needed for Python 3.9+
+tzdata==2025.2              # ✅ Timezone data - used by Django
+urllib3==2.5.0              # ✅ HTTP library (requests dependency)
+# yarg==0.1.10                # ❌ PyPI API wrapper - not needed

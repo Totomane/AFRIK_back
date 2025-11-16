@@ -31,6 +31,7 @@ from typing import Dict, Tuple, Optional, List
 WB_BASE = "https://api.worldbank.org/v2"
 IMF_BASE = "https://dataservices.imf.org/REST/SDMX_JSON.svc"
 
+
 # Common World Bank indicators
 WB_INDICATORS = {
     "gdp_usd": "NY.GDP.MKTP.CD",          # GDP (current US$)
@@ -84,6 +85,7 @@ def fetch_imf_series(dataset: str, key: str, year: int) -> Optional[Tuple[float,
         return float(v), f"IMF:{dataset}:{key} {t}"
     except Exception:
         return None
+
 
 def build_verified_facts(country_label: str, country_iso3: str, year: int) -> Tuple[str, Dict[str, float]]:
     """
@@ -143,7 +145,7 @@ def generate_text(prompt: str, max_tokens: int = 1200, max_retries: int = None) 
             if response.status_code == 429:
                 if attempt < max_retries:
                     wait_time = (2 ** attempt) + 2
-                    print(f"⏳ Rate limit - attente {wait_time}s")
+                    print(f"Rate limit - attente {wait_time}s")
                     time.sleep(wait_time)
                     continue
                 else:
@@ -151,7 +153,7 @@ def generate_text(prompt: str, max_tokens: int = 1200, max_retries: int = None) 
             
             if response.status_code != 200:
                 error_msg = f"Erreur API: {response.status_code} - {response.text}"
-                print(f"❌ {error_msg}")
+                print(f" {error_msg}")
                 if attempt < max_retries:
                     time.sleep(2)
                     continue

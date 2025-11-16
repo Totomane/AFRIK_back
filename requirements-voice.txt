@@ -1,0 +1,8 @@
+# --- Voice Recognition & TTS ---
+ctranslate2==4.4.0
+faster-whisper==1.0.1
+
+# --- Hugging Face for Dia TTS ---
+transformers==4.44.2
+torch==2.4.1
+soundfile==0.12.1

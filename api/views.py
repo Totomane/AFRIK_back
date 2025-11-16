@@ -106,6 +106,34 @@ class HealthCheckView(APIView):
         return Response({"status": "API is running"}, status=status.HTTP_200_OK)
 
 # -----------------------
+# Counter endpoint
+# -----------------------
+class CounterView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        """Get current counts of generated content"""
+        try:
+            # Count files in media directories
+            reports_path = os.path.join(settings.MEDIA_ROOT, 'reports')
+            podcast_path = os.path.join(settings.MEDIA_ROOT, 'podcast')
+            texts_path = os.path.join(settings.MEDIA_ROOT, 'texts')
+            
+            reports_count = len([f for f in os.listdir(reports_path) if os.path.isfile(os.path.join(reports_path, f))]) if os.path.exists(reports_path) else 0
+            podcasts_count = len([f for f in os.listdir(podcast_path) if os.path.isfile(os.path.join(podcast_path, f))]) if os.path.exists(podcast_path) else 0
+            texts_count = len([f for f in os.listdir(texts_path) if os.path.isfile(os.path.join(texts_path, f))]) if os.path.exists(texts_path) else 0
+            
+            return Response({
+                "reports": reports_count,
+                "podcasts": podcasts_count,
+                "texts": texts_count,
+                "total": reports_count + podcasts_count + texts_count
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# -----------------------
 # CSRF Token endpoint
 # -----------------------
 @method_decorator(ensure_csrf_cookie, name='dispatch')
