@@ -1,6 +1,6 @@
 # backend/api/urls.py
 from django.urls import path
-from .views import GenerateReportView, CSRFTokenView, GeneratePodcastView, MediaListView, MediaDownloadView, CounterView
+from .views import GenerateReportView, CSRFTokenView, GeneratePodcastView, MediaListView, MediaDownloadView, CounterView, OAuthConnectionStatusView
 from . import views
 
 urlpatterns = [
@@ -17,4 +17,7 @@ urlpatterns = [
     # Utility endpoints
     path('csrf/', views.CSRFTokenView.as_view(), name='get-csrf-token'),
     path('counter/', views.CounterView.as_view(), name='counter'),
+    
+    # OAuth endpoints
+    path('oauth/status', views.OAuthConnectionStatusView.as_view(), name='oauth-status'),
 ]

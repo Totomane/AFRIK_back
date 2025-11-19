@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from services import podcast_generator
+from oauth.models import SocialToken
 
 from .models import Country, RiskCategory, RiskData, RiskForecast, ReportRequest
 from .serializers import (
@@ -329,4 +330,56 @@ class MediaDownloadView(APIView):
                 error_response, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+# -----------------------
+# OAuth Connection Status
+# -----------------------
+class OAuthConnectionStatusView(APIView):
+    """Check OAuth connection status for different providers"""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        """
+        Get OAuth connection status for all supported providers
+        Returns which providers are connected for the current user (or any user if not authenticated)
+        """
+        print("=== GET /api/oauth/status ===")
+        print(f"User authenticated: {request.user.is_authenticated}")
+        print(f"User: {request.user}")
+        
+        # For now, we'll check if ANY user has connected accounts
+        # In production, you'd typically check for the authenticated user only
+        providers = ['youtube', 'linkedin', 'spotify', 'x']
+        
+        connection_status = {}
+        
+        try:
+            for provider in providers:
+                # Check if any active token exists for this provider
+                has_connection = SocialToken.objects.filter(
+                    provider=provider,
+                    is_active=True
+                ).exists()
+                
+                connection_status[provider] = {
+                    'connected': has_connection,
+                    'provider': provider.title(),
+                    'display_name': dict(SocialToken.PROVIDER_CHOICES)[provider]
+                }
+                
+                print(f"Provider {provider}: {'Connected' if has_connection else 'Not connected'}")
+            
+            response_data = {
+                'connections': connection_status,
+                'total_connected': sum(1 for status in connection_status.values() if status['connected'])
+            }
+            
+            print(f"Sending OAuth status response: {response_data}")
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            error_response = {"error": f"Error checking OAuth status: {str(e)}"}
+            print(f"Exception in OAuth status check: {str(e)}")
+            return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

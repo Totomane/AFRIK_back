@@ -1,24 +1,37 @@
+# oauth/models.py
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class SocialToken(models.Model):
-    PROVIDERS = [
-        ('youtube', 'YouTube'),
+    PROVIDER_CHOICES = [
         ('linkedin', 'LinkedIn'),
-        ('x', 'X'),
+        ('youtube', 'YouTube'),
         ('spotify', 'Spotify'),
+        ('x', 'X'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    provider = models.CharField(max_length=20, choices=PROVIDERS)
-    access_token = models.TextField()
-    refresh_token = models.TextField(blank=True, null=True)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="social_tokens",
+    )
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
+
+    access_token = models.CharField(max_length=512)
+    refresh_token = models.CharField(max_length=512, blank=True, null=True)
     expires_at = models.DateTimeField(blank=True, null=True)
     scopes = models.TextField(blank=True, null=True)
-    provider_user_id = models.CharField(max_length=255, blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('user', 'provider')
+        unique_together = ("user", "provider")
+
+    def __str__(self):
+        return f"{self.user.username} – {self.provider}"
 
 
 class Publication(models.Model):
@@ -29,7 +42,7 @@ class Publication(models.Model):
         ('failed', 'Failed'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    provider = models.CharField(max_length=20, choices=SocialToken.PROVIDERS)
+    provider = models.CharField(max_length=20, choices=SocialToken.PROVIDER_CHOICES)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     media_path = models.CharField(max_length=512)

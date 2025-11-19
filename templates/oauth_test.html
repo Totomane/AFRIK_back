@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Integration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .oauth-connections {
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .connection-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .connection-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .provider-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .provider-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .youtube { background: #FF0000; }
+        .linkedin { background: #0077B5; }
+        .spotify { background: #1DB954; }
+        .x { background: #000000; }
+        
+        .provider-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-connected {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .status-disconnected {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .checkmark {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            animation: pulse 1.5s infinite;
+            font-size: 12px;
+        }
+        
+        .connect-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .connect-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+        
+        .refresh-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 OAuth Integration Test</h1>
+        
+        <button class="refresh-btn" onclick="oauthManager.loadConnectionStatus()">
+            🔄 Refresh Status
+        </button>
+        
+        <div class="oauth-connections">
+            <h3>Social Media Connections</h3>
+            <div class="connection-list" id="connectionList">
+                <div class="loading">Loading connection status...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class OAuthConnectionManager {
+            constructor() {
+                this.baseUrl = 'http://127.0.0.1:8000';
+                this.connectionList = document.getElementById('connectionList');
+                this.loadConnectionStatus();
+                
+                // Refresh status every 30 seconds
+                setInterval(() => this.loadConnectionStatus(), 30000);
+            }
+            
+            async loadConnectionStatus() {
+                try {
+                    this.connectionList.innerHTML = '<div class="loading">Loading connection status...</div>';
+                    
+                    const response = await fetch(`${this.baseUrl}/api/oauth/status`);
+                    const data = await response.json();
+                    this.renderConnections(data.connections);
+                } catch (error) {
+                    console.error('Error loading OAuth status:', error);
+                    this.showError('Failed to load connection status');
+                    this.connectionList.innerHTML = '<div style="color: red; text-align: center;">Failed to load connection status</div>';
+                }
+            }
+            
+            renderConnections(connections) {
+                this.connectionList.innerHTML = '';
+                
+                Object.entries(connections).forEach(([provider, info]) => {
+                    const connectionItem = this.createConnectionItem(provider, info);
+                    this.connectionList.appendChild(connectionItem);
+                });
+            }
+            
+            createConnectionItem(provider, info) {
+                const div = document.createElement('div');
+                div.className = 'connection-item';
+                
+                const isConnected = info.connected;
+                const statusClass = isConnected ? 'status-connected' : 'status-disconnected';
+                const statusText = isConnected ? 'Connected' : 'Not connected';
+                
+                // Provider icon with first letter
+                const iconText = provider === 'x' ? 'X' : provider.charAt(0).toUpperCase();
+                
+                div.innerHTML = `
+                    <div class="provider-info">
+                        <div class="provider-icon ${provider}">${iconText}</div>
+                        <span class="provider-name">${info.display_name}</span>
+                    </div>
+                    <div class="connection-status">
+                        <span class="${statusClass}">${statusText}</span>
+                        ${isConnected ? 
+                            '<div class="checkmark">✓</div>' : 
+                            `<button class="connect-btn" onclick="oauthManager.connectProvider('${provider}')">Connect</button>`
+                        }
+                    </div>
+                `;
+                
+                return div;
+            }
+            
+            connectProvider(provider) {
+                const oauthUrl = `${this.baseUrl}/oauth/start?provider=${provider}`;
+                const popup = window.open(
+                    oauthUrl, 
+                    'oauth_popup', 
+                    'width=600,height=700,scrollbars=yes,resizable=yes'
+                );
+                
+                // Listen for successful OAuth completion
+                const messageHandler = (event) => {
+                    if (event.origin !== this.baseUrl) return;
+                    
+                    if (event.data.type === 'oauth_success') {
+                        popup.close();
+                        this.loadConnectionStatus(); // Refresh the status
+                        this.showSuccess(`Successfully connected to ${provider}!`);
+                        window.removeEventListener('message', messageHandler);
+                    }
+                };
+                
+                window.addEventListener('message', messageHandler);
+                
+                // Handle popup closed manually
+                const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                        clearInterval(checkClosed);
+                        window.removeEventListener('message', messageHandler);
+                        // Refresh status in case connection was made
+                        setTimeout(() => this.loadConnectionStatus(), 1000);
+                    }
+                }, 1000);
+            }
+            
+            showSuccess(message) {
+                // Create success toast/notification
+                const toast = document.createElement('div');
+                toast.className = 'success-toast';
+                toast.textContent = message;
+                
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+            
+            showError(message) {
+                console.error(message);
+                // Similar error toast implementation
+            }
+        }
+
+        // Initialize the OAuth manager
+        const oauthManager = new OAuthConnectionManager();
+    </script>
+</body>
+</html>
