@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
 from .utils import oauth
@@ -87,9 +87,30 @@ def oauth_callback(request, provider):
         </script>
         </body></html>
         """
+        
         return HttpResponse(html)
 
-    user = _get_effective_user(request)
+    # Check if user is authenticated
+    if not request.user.is_authenticated:
+        # user not logged in → cannot attach OAuth token to an account
+        html = f"""
+        <html><body>
+        <script>
+            window.opener.postMessage(
+                {{
+                    type: "oauth-error",
+                    provider: "{provider}",
+                    error: "You must be logged in to connect {provider}"
+                }},
+                window.location.origin
+            );
+            window.close();
+        </script>
+        </body></html>
+        """
+        return HttpResponse(html)
+
+    user = request.user
 
     # Save / update token in DB
     scopes = token.get("scope")
@@ -178,7 +199,7 @@ def account_details(request, provider):
 
 # ---------- API: POST /api/oauth/disconnect/<provider>/ ----------
 
-@csrf_exempt
+@csrf_protect
 @require_POST
 def disconnect_account(request, provider):
     user = _get_effective_user(request)
@@ -203,7 +224,7 @@ def disconnect_account(request, provider):
 
 # ---------- API: POST /api/oauth/refresh/<provider>/ ----------
 
-@csrf_exempt
+@csrf_protect
 @require_POST
 def refresh_oauth_token(request, provider):
     user = _get_effective_user(request)

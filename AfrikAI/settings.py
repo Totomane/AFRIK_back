@@ -16,11 +16,15 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@example.com"
+
 
 # ----------------------
 # Applications installées
 # -----------------------
 INSTALLED_APPS = [
+    "accounts.apps.AccountsConfig",
     "corsheaders",  # <--- pour CORS
     'django.contrib.admin',
     'django.contrib.auth',
@@ -29,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api',
+    'ratelimit',
     'reports',
     "voice",  
     "oauth",

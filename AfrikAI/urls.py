@@ -14,7 +14,7 @@ urlpatterns = [
     path("voicecmd/", include("voice.voicecmd_urls")),
     path("oauth/", include("oauth.urls")),
     path('counter/', CounterView.as_view(), name='counter'),
-    path('oauth/', include('oauth.urls')),
+    path('api/auth/', include('accounts.urls')),
     # API endpoints used by oauthService.ts
     path('api/oauth/connected-accounts/', oauth_views.connected_accounts),
     path('api/oauth/disconnect/<str:provider>/', oauth_views.disconnect_account),

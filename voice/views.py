@@ -1,6 +1,6 @@
 import tempfile
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from services.audio_processing_service import AudioProcessingService
 from services.country_detection_service import extract_country_risk_year
 from django.templatetags.static import static
@@ -30,7 +30,7 @@ def get_voice_prompt(request, step):
     }
     url = files.get(step, files["intro"])
     return JsonResponse({"url": request.build_absolute_uri(url)})
-@csrf_exempt
+@csrf_protect
 def recognize_speech(request):
     """
     🎙️ POST /voice/recognize/
