@@ -33,9 +33,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api',
-    'ratelimit',
+    # 'django_ratelimit',  # Temporarily disabled due to cache issues
     'reports',
-    "voice",  
+    # "voice",  # Temporarily disabled due to import issues
     "oauth",
     "channels",
 ]
@@ -55,13 +55,23 @@ MIDDLEWARE = [
 ]
 
 # -----------------------
-# CORS
+# CORS & CSRF
 # -----------------------
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 CORS_ALLOW_CREDENTIALS = True  # <--- très important pour envoyer cookies/CSRF
+
+# CSRF Configuration - Add trusted origins for your frontend
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+# Allow CSRF cookies from different origins
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
 # -----------------------
 # URL & Templates
@@ -143,6 +153,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Auto field par défaut
 # -----------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# -----------------------
+# Cache Configuration
+# -----------------------
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
+    }
+}
 
 # -----------------------
 # OAuth Configuration

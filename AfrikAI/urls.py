@@ -10,8 +10,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('reports/', include('reports.urls')),
-    path("voice/", include("voice.urls")),
-    path("voicecmd/", include("voice.voicecmd_urls")),
+    # path("voice/", include("voice.urls")),  # Temporarily disabled
+    # path("voicecmd/", include("voice.voicecmd_urls")),  # Temporarily disabled
     path("oauth/", include("oauth.urls")),
     path('counter/', CounterView.as_view(), name='counter'),
     path('api/auth/', include('accounts.urls')),

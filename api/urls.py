@@ -1,6 +1,6 @@
 # backend/api/urls.py
 from django.urls import path
-from .views import GenerateReportView, CSRFTokenView, GeneratePodcastView, MediaListView, MediaDownloadView, CounterView, OAuthConnectionStatusView
+from .views import GenerateReportView, CSRFTokenView, GeneratePodcastView, MediaListView, MediaDownloadView, CounterView, OAuthConnectionStatusView, SocialMediaShareView, TestSocialMediaShareView, OAuthTokenDebugView
 from . import views
 
 urlpatterns = [
@@ -20,4 +20,12 @@ urlpatterns = [
     
     # OAuth endpoints
     path('oauth/status', views.OAuthConnectionStatusView.as_view(), name='oauth-status'),
+    
+    # Social Media Sharing endpoints
+    path('social-media/share/<str:provider>/', views.SocialMediaShareView.as_view(), name='social-media-share'),
+    path('test-social-media/share/<str:provider>/', views.TestSocialMediaShareView.as_view(), name='test-social-media-share'),
+    
+    # OAuth Token Debug endpoints
+    path('oauth/debug/', views.OAuthTokenDebugView.as_view(), name='oauth-debug-all'),
+    path('oauth/debug/<str:provider>/', views.OAuthTokenDebugView.as_view(), name='oauth-debug-provider'),
 ]

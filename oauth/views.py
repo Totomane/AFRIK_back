@@ -145,6 +145,15 @@ def oauth_success(request):
 # ---------- API: GET /api/oauth/connected-accounts/ ----------
 
 def connected_accounts(request):
+    # Debug logging to identify the source of infinite requests
+    import time
+    from django.utils import timezone
+    
+    print(f"🔍 [DEBUG] connected_accounts called at {timezone.now()}")
+    print(f"🔍 [DEBUG] Request headers: {dict(request.headers)}")
+    print(f"🔍 [DEBUG] User agent: {request.META.get('HTTP_USER_AGENT', 'Unknown')}")
+    print("=" * 50)
+    
     user = _get_effective_user(request)
 
     tokens = SocialToken.objects.filter(user=user, is_active=True)
