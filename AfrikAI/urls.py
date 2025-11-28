@@ -20,8 +20,12 @@ urlpatterns = [
     path('api/oauth/disconnect/<str:provider>/', oauth_views.disconnect_account),
     path('api/oauth/account/<str:provider>/', oauth_views.account_details),
     path('api/oauth/refresh/<str:provider>/', oauth_views.refresh_oauth_token),
-    # Test page
-    path('oauth-test/', lambda request: render(request, 'oauth_test.html'), name='oauth-test'),
+    path('api/oauth/repair/<str:provider>/', oauth_views.repair_connection),
+    path('api/oauth/diagnostics/<str:provider>/', oauth_views.connection_diagnostics),
+    # Test pages
+    path('oauth-test/', lambda request: render(request, 'oauth-test.html'), name='oauth-test'),
+    path('oauth-postmessage-test/', lambda request: render(request, 'oauth-postmessage-test.html'), name='oauth-postmessage-test'),
+    path('oauth-simple-test/', lambda request: render(request, 'oauth-simple-test.html'), name='oauth-simple-test'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

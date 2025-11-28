@@ -32,15 +32,99 @@ class YouTubeService:
             )
             
             if response.status_code == 200:
-                return {"valid": True, "response": response.json()}
+                channel_data = response.json()
+                return {
+                    "valid": True, 
+                    "response": channel_data,
+                    "channels": channel_data.get('items', []),
+                    "channel_count": len(channel_data.get('items', []))
+                }
             else:
                 return {
                     "valid": False, 
                     "status_code": response.status_code,
-                    "error": response.text
+                    "error": response.text,
+                    "needs_refresh": response.status_code == 401
                 }
         except Exception as e:
             return {"valid": False, "error": str(e)}
+    
+    @staticmethod
+    def refresh_token(refresh_token: str, client_id: str = None, client_secret: str = None) -> Dict[str, Any]:
+        """
+        Refresh YouTube OAuth token using refresh token
+        
+        Args:
+            refresh_token: The refresh token
+            client_id: YouTube OAuth client ID (optional, uses env var if not provided)
+            client_secret: YouTube OAuth client secret (optional, uses env var if not provided)
+        
+        Returns:
+            Dict with refresh result containing new access token
+        """
+        import os
+        
+        # Use provided credentials or fall back to environment variables
+        client_id = client_id or os.environ.get('YOUTUBE_CLIENT_ID', '')
+        client_secret = client_secret or os.environ.get('YOUTUBE_CLIENT_SECRET', '')
+        
+        if not client_id or not client_secret:
+            return {
+                "success": False,
+                "error": "YouTube OAuth credentials not configured. Please set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET environment variables."
+            }
+        
+        try:
+            print("🔄 Refreshing YouTube OAuth token...")
+            
+            token_url = "https://oauth2.googleapis.com/token"
+            
+            payload = {
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'refresh_token': refresh_token,
+                'grant_type': 'refresh_token'
+            }
+            
+            response = requests.post(
+                token_url,
+                data=payload,
+                headers={'Content-Type': 'application/x-www-form-urlencoded'},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                token_data = response.json()
+                
+                print("✅ YouTube token refreshed successfully")
+                
+                return {
+                    "success": True,
+                    "access_token": token_data.get("access_token"),
+                    "expires_in": token_data.get("expires_in", 3600),
+                    "token_type": token_data.get("token_type", "Bearer"),
+                    "scope": token_data.get("scope", "")
+                }
+            else:
+                error_data = response.json() if response.content else {}
+                error_msg = error_data.get("error_description", response.text)
+                
+                print(f"❌ YouTube token refresh failed: {error_msg}")
+                
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "error_code": error_data.get("error", "unknown_error"),
+                    "status_code": response.status_code
+                }
+                
+        except Exception as e:
+            error_msg = f"Token refresh failed: {str(e)}"
+            print(f"❌ {error_msg}")
+            return {
+                "success": False,
+                "error": error_msg
+            }
     
     def upload_video(self, 
                     video_file_path: str, 

@@ -467,71 +467,201 @@ class SocialMediaShareView(APIView):
             from oauth.models import SocialToken
             from oauth.views import _get_effective_user
             
+            # Import enhanced OAuth management
+            import sys
+            sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            try:
+                from enhanced_oauth_manager import ProfessionalOAuthManager
+            except ImportError:
+                ProfessionalOAuthManager = None
+                print("⚠️ Enhanced OAuth Manager not available - using fallback")
+            
             user = _get_effective_user(request)
             
-            try:
-                token = SocialToken.objects.get(user=user, provider=provider, is_active=True)
-                print(f"OAuth token found for {provider}")
-                print(f"Token created: {token.created_at}")
-                print(f"Token expires: {token.expires_at}")
-                print(f"Token first 10 chars: {token.access_token[:10]}...")
+            # Use enhanced OAuth management if available
+            if ProfessionalOAuthManager:
+                print(f"🔬 [OAUTH] Using enhanced OAuth management for {provider}")
+                oauth_manager = ProfessionalOAuthManager(user.id, provider)
                 
-                # Check if token is expired
-                from django.utils import timezone
-                if token.expires_at and token.expires_at <= timezone.now():
-                    days_expired = (timezone.now() - token.expires_at).days
+                # Get comprehensive connection status
+                connection_status = oauth_manager.get_connection_status()
+                print(f"🔍 [OAUTH] Connection status: {connection_status.get('validation_status', 'unknown')}")
+                
+                # Handle different connection states professionally
+                if not connection_status.get('connected'):
                     error_response = {
-                        "error": f"Your {provider.title()} account connection has expired ({days_expired} days ago). Please reconnect to continue uploading.",
+                        "error": f"No {connection_status.get('provider_name', provider.title())} account connected. Please connect your account to continue.",
                         "provider": provider,
+                        "provider_name": connection_status.get('provider_name'),
                         "connect_url": f"/oauth/{provider}/start/",
-                        "expired_at": token.expires_at.isoformat(),
-                        "days_expired": days_expired,
-                        "action_required": "reconnect_oauth",
-                        "user_message": f"Your {provider.title()} connection expired on {token.expires_at.strftime('%B %d, %Y')}. Click 'Connect {provider.title()}' to restore access."
+                        "action_required": "connect_oauth",
+                        "user_message": f"Connect your {connection_status.get('provider_name', provider.title())} account to start uploading content.",
+                        "connection_status": "disconnected"
                     }
-                    print(f"Token expired {days_expired} days ago: {token.expires_at}")
+                    print(f"🚫 [OAUTH] No connection found: {error_response}")
                     return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                
+                elif connection_status.get('is_expired'):
+                    # Try automatic refresh if possible
+                    if connection_status.get('has_refresh_token'):
+                        print(f"🔄 [OAUTH] Attempting automatic token refresh...")
+                        refresh_result = oauth_manager.refresh_token_intelligently()
+                        
+                        if refresh_result.get('success'):
+                            print(f"✅ [OAUTH] Token refreshed successfully")
+                            # Continue with the request using refreshed token
+                        else:
+                            print(f"❌ [OAUTH] Token refresh failed: {refresh_result.get('message')}")
+                            error_response = {
+                                "error": f"Your {connection_status.get('provider_name')} connection has expired and could not be refreshed automatically. Please reconnect your account.",
+                                "provider": provider,
+                                "provider_name": connection_status.get('provider_name'),
+                                "connect_url": f"/oauth/{provider}/start/",
+                                "action_required": "reconnect_oauth",
+                                "user_message": f"Your {connection_status.get('provider_name')} connection expired. Click 'Connect {connection_status.get('provider_name')}' to restore access.",
+                                "connection_status": "expired",
+                                "refresh_failed": True,
+                                "technical_details": refresh_result
+                            }
+                            return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                    else:
+                        # No refresh token available
+                        days_expired = (timezone.now() - connection_status.get('expires_at', timezone.now())).days if connection_status.get('expires_at') else 0
+                        error_response = {
+                            "error": f"Your {connection_status.get('provider_name')} connection has expired. Please reconnect to continue uploading.",
+                            "provider": provider,
+                            "provider_name": connection_status.get('provider_name'),
+                            "connect_url": f"/oauth/{provider}/start/",
+                            "action_required": "reconnect_oauth",
+                            "user_message": f"Your {connection_status.get('provider_name')} connection expired. Click 'Connect {connection_status.get('provider_name')}' to restore access.",
+                            "connection_status": "expired",
+                            "days_expired": days_expired
+                        }
+                        print(f"⏰ [OAUTH] Token expired, no refresh available: {error_response}")
+                        return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                
+                elif connection_status.get('validation_status') == 'insufficient_scopes':
+                    # Critical scope issue detected
+                    print(f"🔴 [OAUTH] Critical scope issue detected - API returned 403")
+                    error_response = {
+                        "error": f"Your {connection_status.get('provider_name')} account permissions are insufficient for this operation. Please reconnect to grant the required permissions.",
+                        "provider": provider,
+                        "provider_name": connection_status.get('provider_name'),
+                        "connect_url": f"/oauth/{provider}/start/",
+                        "action_required": "reconnect_oauth_scopes",
+                        "user_message": f"Your {connection_status.get('provider_name')} account needs additional permissions. Click 'Connect {connection_status.get('provider_name')}' to update your permissions.",
+                        "connection_status": "insufficient_permissions",
+                        "scope_issue": True,
+                        "required_scopes": connection_status.get('required_scopes', []),
+                        "missing_scopes": connection_status.get('missing_scopes', []),
+                        "technical_details": {
+                            "api_error": connection_status.get('api_error'),
+                            "error_details": connection_status.get('error_details', {})
+                        }
+                    }
+                    return Response(error_response, status=status.HTTP_403_FORBIDDEN)
+                
+                elif not connection_status.get('api_accessible', True):
+                    # API validation failed
+                    print(f"🚫 [OAUTH] API validation failed: {connection_status.get('api_error')}")
+                    error_response = {
+                        "error": f"Your {connection_status.get('provider_name')} connection could not be verified. Please try reconnecting your account.",
+                        "provider": provider,
+                        "provider_name": connection_status.get('provider_name'),
+                        "connect_url": f"/oauth/{provider}/start/",
+                        "action_required": "reconnect_oauth",
+                        "user_message": f"There was an issue with your {connection_status.get('provider_name')} connection. Click 'Connect {connection_status.get('provider_name')}' to fix this issue.",
+                        "connection_status": "validation_failed",
+                        "technical_details": {
+                            "validation_status": connection_status.get('validation_status'),
+                            "api_error": connection_status.get('api_error')
+                        }
+                    }
+                    return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                
+                # If we reach here, connection should be healthy
+                print(f"✅ [OAUTH] {connection_status.get('provider_name')} connection is healthy and ready")
+                
+                # Get the token for use in the upload
+                try:
+                    token = SocialToken.objects.get(user=user, provider=provider, is_active=True)
+                except SocialToken.DoesNotExist:
+                    # This shouldn't happen if connection_status shows connected, but handle it
+                    error_response = {
+                        "error": f"Token retrieval failed. Please reconnect your {provider.title()} account.",
+                        "provider": provider,
+                        "connect_url": f"/oauth/{provider}/start/"
+                    }
+                    return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+            
+            else:
+                # Fallback to basic OAuth handling if enhanced manager not available
+                print(f"⚠️ [OAUTH] Using basic OAuth handling for {provider}")
+                try:
+                    token = SocialToken.objects.get(user=user, provider=provider, is_active=True)
+                    print(f"OAuth token found for {provider}")
+                    print(f"Token created: {token.created_at}")
+                    print(f"Token expires: {token.expires_at}")
+                    print(f"Token first 10 chars: {token.access_token[:10]}...")
                     
-            except SocialToken.DoesNotExist:
-                error_response = {
-                    "error": f"No active {provider} account connected. Please connect your {provider} account first.",
-                    "provider": provider,
-                    "connect_url": f"/oauth/{provider}/start/"
-                }
-                print(f"Error response (401): {error_response}")
-                return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                    # Check if token is expired
+                    if token.expires_at and token.expires_at <= timezone.now():
+                        days_expired = (timezone.now() - token.expires_at).days
+                        error_response = {
+                            "error": f"Your {provider.title()} account connection has expired ({days_expired} days ago). Please reconnect to continue uploading.",
+                            "provider": provider,
+                            "connect_url": f"/oauth/{provider}/start/",
+                            "expired_at": token.expires_at.isoformat(),
+                            "days_expired": days_expired,
+                            "action_required": "reconnect_oauth",
+                            "user_message": f"Your {provider.title()} connection expired on {token.expires_at.strftime('%B %d, %Y')}. Click 'Connect {provider.title()}' to restore access."
+                        }
+                        print(f"Token expired {days_expired} days ago: {token.expires_at}")
+                        return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                        
+                except SocialToken.DoesNotExist:
+                    error_response = {
+                        "error": f"No active {provider} account connected. Please connect your {provider} account first.",
+                        "provider": provider,
+                        "connect_url": f"/oauth/{provider}/start/"
+                    }
+                    print(f"Error response (401): {error_response}")
+                    return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
             
             # Import social media services
-            from services.youtube_service import YouTubeService, LinkedInService, SpotifyService, XService
+            from services.youtube_service import YouTubeService, SpotifyService, XService
+            from services.linkedin_service import LinkedInService
             
             # Handle different providers
             if provider == 'youtube':
                 # Use YouTube Data API v3 for video upload
                 youtube_service = YouTubeService(token.access_token)
                 
-                # Validate token before upload
-                print("Validating YouTube OAuth token...")
-                token_validation = youtube_service.validate_token()
-                
-                if not token_validation.get("valid", False):
-                    error_response = {
-                        "error": f"Your YouTube connection is no longer valid. Please reconnect your YouTube account to continue uploading videos.",
-                        "provider": "youtube",
-                        "connect_url": "/oauth/youtube/start/",
-                        "action_required": "reconnect_oauth",
-                        "user_message": "Your YouTube connection has expired or been revoked. Click 'Connect YouTube' to restore video upload access.",
-                        "technical_details": {
-                            "validation_error": token_validation.get("error", "Unknown validation error"),
-                            "status_code": token_validation.get("status_code", 401)
+                # Enhanced token validation (this is redundant if using enhanced manager, but kept for safety)
+                if not ProfessionalOAuthManager:
+                    print("Validating YouTube OAuth token...")
+                    token_validation = youtube_service.validate_token()
+                    
+                    if not token_validation.get("valid", False):
+                        error_response = {
+                            "error": f"Your YouTube connection is no longer valid. Please reconnect your YouTube account to continue uploading videos.",
+                            "provider": "youtube",
+                            "connect_url": "/oauth/youtube/start/",
+                            "action_required": "reconnect_oauth",
+                            "user_message": "Your YouTube connection has expired or been revoked. Click 'Connect YouTube' to restore video upload access.",
+                            "technical_details": {
+                                "validation_error": token_validation.get("error", "Unknown validation error"),
+                                "status_code": token_validation.get("status_code", 401)
+                            }
                         }
-                    }
-                    print(f"Token validation failed: {token_validation}")
-                    return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
-                
-                print("✅ YouTube token is valid!")
+                        print(f"Token validation failed: {token_validation}")
+                        return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                    
+                    print("✅ YouTube token is valid!")
+                else:
+                    print("✅ YouTube connection already validated by enhanced OAuth manager")
                 
                 # Construct full file path
-                import os
                 if not os.path.isabs(file_path):
                     # Try different possible locations
                     possible_paths = [
@@ -573,13 +703,21 @@ class SocialMediaShareView(APIView):
                         "success": True,
                         "message": "Video successfully uploaded to YouTube",
                         "provider": "youtube",
+                        "provider_name": "YouTube",
                         "video_id": upload_result.get("video_id"),
                         "video_url": upload_result.get("video_url"),
                         "title": title,
+                        "description": description,
                         "privacy_status": privacy_status,
-                        "uploaded_at": upload_result.get("uploaded_at")
+                        "uploaded_at": upload_result.get("uploaded_at"),
+                        "connection_status": "healthy",
+                        "upload_stats": {
+                            "file_name": file_path,
+                            "tags_count": len(tags),
+                            "category_id": category_id
+                        }
                     }
-                    print(f"YouTube upload success: {response_data}")
+                    print(f"🎉 YouTube upload success: {response_data}")
                     return Response(response_data, status=status.HTTP_200_OK)
                 else:
                     error_response = {
@@ -590,18 +728,108 @@ class SocialMediaShareView(APIView):
                     return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
             
             elif provider == 'linkedin':
-                # LinkedIn sharing
+                # LinkedIn professional posting
                 linkedin_service = LinkedInService(token.access_token)
-                result = linkedin_service.share_post(description, file_path)
                 
-                response_data = {
-                    "success": True,
-                    "message": "Content shared to LinkedIn",
-                    "provider": "linkedin",
-                    "post_id": result.get("post_id"),
-                    "shared_at": timezone.now().isoformat()
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
+                # Validate token before posting
+                print("Validating LinkedIn OAuth token...")
+                token_validation = linkedin_service.validate_token()
+                
+                if not token_validation.get("valid", False):
+                    error_response = {
+                        "error": f"Your LinkedIn connection is no longer valid. Please reconnect your LinkedIn account to continue sharing content.",
+                        "provider": "linkedin",
+                        "connect_url": "/oauth/linkedin/start/",
+                        "action_required": "reconnect_oauth",
+                        "user_message": "Your LinkedIn connection has expired or been revoked. Click 'Connect LinkedIn' to restore sharing access.",
+                        "technical_details": {
+                            "validation_error": token_validation.get("error", "Unknown validation error"),
+                            "status_code": token_validation.get("status_code", 401)
+                        }
+                    }
+                    print(f"LinkedIn token validation failed: {token_validation}")
+                    return Response(error_response, status=status.HTTP_401_UNAUTHORIZED)
+                
+                print("✅ LinkedIn token is valid!")
+                
+                # Construct full file path if provided
+                full_file_path = None
+                if file_path:
+                    if not os.path.isabs(file_path):
+                        # Try different possible locations
+                        possible_paths = [
+                            os.path.join(settings.MEDIA_ROOT, 'podcast', file_path),
+                            os.path.join(settings.MEDIA_ROOT, 'reports', file_path),
+                            os.path.join(settings.MEDIA_ROOT, file_path),
+                            file_path
+                        ]
+                        
+                        for path in possible_paths:
+                            if os.path.exists(path):
+                                full_file_path = path
+                                print(f"Found media file at: {path}")
+                                break
+                        
+                        if not full_file_path:
+                            print(f"⚠️ Media file not found: {file_path}")
+                            # Continue without media - LinkedIn can post text-only
+                    else:
+                        full_file_path = file_path if os.path.exists(file_path) else None
+                
+                # Determine industry for professional enhancement
+                content_text = f"{title} {description}".lower()
+                industry = None
+                if any(word in content_text for word in ['technology', 'tech', 'ai', 'digital']):
+                    industry = 'technology'
+                elif any(word in content_text for word in ['business', 'market', 'economic']):
+                    industry = 'business'
+                elif any(word in content_text for word in ['africa', 'african']):
+                    industry = 'africa'
+                elif any(word in content_text for word in ['analytics', 'data', 'analysis']):
+                    industry = 'analytics'
+                
+                # Convert tags to list if provided as string
+                hashtag_list = []
+                if tags:
+                    if isinstance(tags, str):
+                        hashtag_list = [f"#{tag.strip().replace('#', '')}" for tag in tags.split(',') if tag.strip()]
+                    elif isinstance(tags, list):
+                        hashtag_list = [f"#{tag.replace('#', '')}" for tag in tags]
+                
+                print(f"Posting to LinkedIn with industry: {industry}")
+                
+                result = linkedin_service.share_post(
+                    title=title,
+                    description=description,
+                    media_path=full_file_path,
+                    visibility=privacy_status.upper() if privacy_status in ['public', 'connections'] else 'PUBLIC',
+                    hashtags=hashtag_list,
+                    industry=industry
+                )
+                
+                if result.get("success"):
+                    response_data = {
+                        "success": True,
+                        "message": "Content successfully shared to LinkedIn",
+                        "provider": "linkedin",
+                        "post_id": result.get("post_id"),
+                        "post_url": result.get("post_url"),
+                        "title": title,
+                        "content_length": result.get("content_length"),
+                        "media_uploaded": result.get("media_uploaded", False),
+                        "visibility": result.get("visibility"),
+                        "enhanced_content": result.get("enhanced_content"),
+                        "shared_at": result.get("shared_at")
+                    }
+                    print(f"LinkedIn post success: {response_data}")
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    error_response = {
+                        "error": result.get("error", "Unknown LinkedIn posting error"),
+                        "provider": "linkedin"
+                    }
+                    print(f"LinkedIn post failed: {error_response}")
+                    return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
             
             elif provider == 'spotify':
                 # Spotify playlist creation
@@ -706,7 +934,6 @@ class TestSocialMediaShareView(APIView):
                     )
                 
                 # Check if file exists
-                import os
                 full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
                 if not os.path.exists(full_file_path):
                     return Response(

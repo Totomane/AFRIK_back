@@ -25,6 +25,8 @@ def recognize_speech(request):
     os.remove(tmp_path)
 
     country, risk, year = extract_country_risk_year(transcription)
+    
+
 
     return JsonResponse({
         "transcription": transcription,

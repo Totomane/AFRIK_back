@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""
+Solution for OAuth popup closing issue
+"""
+
+def analyze_popup_close_issue():
+    """Analyze why the OAuth popup closes immediately"""
+    print("🔍 OAuth Popup Close Issue Analysis")
+    print("=" * 50)
+    
+    print("📋 Based on your frontend logs:")
+    print("   • Popup opens successfully")
+    print("   • User is authenticated in frontend (userAuthenticated: true)")
+    print("   • Popup closes without reaching backend callback")
+    print("   • No postMessage received")
+    print()
+    
+    print("🎯 Root Cause: Authentication Mismatch")
+    print("-" * 40)
+    print("The issue is likely that your frontend shows 'authenticated: true'")
+    print("but the Django backend session doesn't have the user authenticated.")
+    print()
+    print("This happens when:")
+    print("   1. Frontend uses JWT/token auth but Django expects session auth")
+    print("   2. User logged in via API but not via Django session")
+    print("   3. CSRF/session cookies not properly set")
+    print()
+    
+    print("🛠️ SOLUTION 1: Remove Authentication Requirement (Temporary)")
+    print("-" * 50)
+    print("For testing, temporarily remove the authentication check:")
+    print()
+    print("In oauth/views.py, comment out the authentication check:")
+    print("```python")
+    print("# # Check if user is authenticated - REQUIRED")  
+    print("# if not request.user.is_authenticated:")
+    print("#     # Return authentication error...")
+    print("```")
+    print()
+    
+    print("🛠️ SOLUTION 2: Fix Session Authentication")
+    print("-" * 40)
+    print("Ensure your frontend login also creates Django session:")
+    print()
+    print("1. When user logs in via your frontend API:")
+    print("   • Call Django's session login endpoint")
+    print("   • Ensure session cookies are set")
+    print("   • Frontend should maintain Django session")
+    print()
+    print("2. Check that accounts/views/auth.py login sets session:")
+    print("   • Uses django.contrib.auth.login()")
+    print("   • Returns session cookie")
+    print()
+    
+    print("🛠️ SOLUTION 3: Debug OAuth Start Directly")
+    print("-" * 40)
+    print("Test OAuth start manually in browser:")
+    print()
+    print("1. Go to: http://localhost:8000/oauth/linkedin/start/")
+    print("2. See what happens - does it redirect to LinkedIn?")
+    print("3. If you get authentication error, login first at Django admin")
+    print("4. Then try OAuth start again")
+    print()
+    
+    print("🔧 IMMEDIATE FIX: Test with Authentication Disabled")
+    print("-" * 50)
+    print("To quickly test if this is the issue:")
+    print("1. Temporarily disable authentication check in oauth_callback")
+    print("2. Test OAuth flow")
+    print("3. If it works, then fix session authentication")
+    print("4. Re-enable authentication check")
+
+def show_quick_fix():
+    """Show the quick fix to test OAuth flow"""
+    print(f"\n🚀 QUICK TEST FIX")
+    print("=" * 50)
+    print("Add this to the top of oauth_callback in oauth/views.py:")
+    print()
+    print("```python")
+    print("# TEMPORARY: Skip auth check for testing")
+    print("# TODO: Fix session authentication and re-enable")
+    print("# if not request.user.is_authenticated:")
+    print("#     print(f\"🔐 [OAUTH] User not authenticated, but proceeding for testing\")")
+    print("#     # Create or get a test user")
+    print("#     from django.contrib.auth.models import User")
+    print("#     user, _ = User.objects.get_or_create(username='oauth_test_user')")
+    print("#     request.user = user")
+    print("```")
+    print()
+    print("This will let you test the OAuth flow end-to-end.")
+    print("Once working, fix the session authentication issue.")
+
+if __name__ == '__main__':
+    analyze_popup_close_issue()
+    show_quick_fix()

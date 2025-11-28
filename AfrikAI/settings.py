@@ -73,6 +73,13 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
+# Session Configuration for OAuth
+SESSION_COOKIE_AGE = 3600  # 1 hour
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+
 # -----------------------
 # URL & Templates
 # -----------------------

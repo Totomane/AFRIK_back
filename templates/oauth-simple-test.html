@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth PostMessage Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .btn { background: #0077b5; color: white; padding: 15px 25px; border: none; border-radius: 5px; cursor: pointer; margin: 10px; }
+        .log { background: #f5f5f5; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin: 15px 0; max-height: 300px; overflow-y: auto; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔗 OAuth PostMessage Test</h1>
+    <button class="btn" onclick="testLinkedInAuth()">Test LinkedIn OAuth</button>
+    <button class="btn" onclick="testErrorScenario()">Test Error Scenario</button>
+    <button class="btn" onclick="clearLog()">Clear Log</button>
+    
+    <div id="log" class="log">
+        <div>Ready to test OAuth postMessage...</div>
+    </div>
+
+    <script>
+        function log(message, type = '') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '<div>Log cleared...</div>';
+        }
+        
+        function testLinkedInAuth() {
+            log('🚀 Opening LinkedIn OAuth popup...');
+            
+            const popup = window.open(
+                'http://localhost:8000/oauth/linkedin/start/',
+                'linkedin_auth',
+                'width=600,height=700,scrollbars=yes,resizable=yes'
+            );
+            
+            if (!popup) {
+                log('❌ Failed to open popup - check popup blocker!', 'error');
+                return;
+            }
+            
+            log('✅ Popup opened successfully');
+            
+            // Listen for ANY postMessage
+            const messageHandler = (event) => {
+                log(`📨 PostMessage received from: ${event.origin}`, 'success');
+                log(`📨 Message data: ${JSON.stringify(event.data)}`);
+                
+                if (typeof event.data === 'string') {
+                    log(`📨 String message: "${event.data}"`, 'success');
+                    if (event.data === 'oauth-success') {
+                        log('🎉 SUCCESS: Received oauth-success string!', 'success');
+                    }
+                } else if (event.data && event.data.type) {
+                    log(`📨 Object message type: "${event.data.type}"`, 'success');
+                    if (event.data.type === 'oauth-success') {
+                        log(`🎉 SUCCESS: Received oauth-success object for ${event.data.provider}!`, 'success');
+                    } else if (event.data.type === 'oauth-error') {
+                        log(`❌ ERROR: ${event.data.error}`, 'error');
+                    }
+                }
+                
+                // Remove listener after first message
+                window.removeEventListener('message', messageHandler);
+            };
+            
+            window.addEventListener('message', messageHandler);
+            
+            // Check if popup closed without message
+            const checkClosed = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkClosed);
+                    setTimeout(() => {
+                        log('⚠️ Popup closed - checking if message was received...', 'error');
+                        window.removeEventListener('message', messageHandler);
+                    }, 1000);
+                }
+            }, 1000);
+        }
+        
+        function testErrorScenario() {
+            log('🚀 Testing error scenario...');
+            
+            const popup = window.open(
+                'http://localhost:8000/oauth/linkedin/callback/?error=test_error&error_description=This is a test error',
+                'linkedin_error',
+                'width=500,height=400'
+            );
+            
+            if (!popup) {
+                log('❌ Failed to open error test popup', 'error');
+                return;
+            }
+            
+            const messageHandler = (event) => {
+                log(`📨 Error test message: ${JSON.stringify(event.data)}`, 'success');
+                window.removeEventListener('message', messageHandler);
+            };
+            
+            window.addEventListener('message', messageHandler);
+        }
+        
+        // Log when page loads
+        log('📱 OAuth test page loaded');
+        log('🔍 Listening for postMessages...');
+    </script>
+</body>
+</html>

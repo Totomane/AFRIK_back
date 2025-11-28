@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth PostMessage Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            min-width: 200px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn.linkedin {
+            background: #0077b5;
+        }
+        
+        .status {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry.message {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .log-entry.success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .log-entry.error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        
+        .json-display {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔗 OAuth PostMessage Test</h1>
+        <p>Test OAuth popup flow and verify postMessage communication works correctly.</p>
+        
+        <div class="status info" id="mainStatus">
+            Ready to test OAuth flows. Click a button below to start.
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="btn linkedin" onclick="testLinkedInOAuth()">
+                🔗 Test LinkedIn OAuth
+            </button>
+            <button class="btn" onclick="testErrorScenario()">
+                ❌ Test Error Scenario
+            </button>
+            <button class="btn" onclick="clearLog()">
+                🗑️ Clear Log
+            </button>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h3>📨 PostMessage Log</h3>
+        <div class="log-container" id="logContainer">
+            <div class="log-entry">Waiting for OAuth events...</div>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h3>🎯 Expected Flow</h3>
+        <ol>
+            <li><strong>Click "Test LinkedIn OAuth"</strong> - Opens popup to LinkedIn authorization</li>
+            <li><strong>Complete LinkedIn auth</strong> - Login and authorize the application</li>
+            <li><strong>Backend processes OAuth</strong> - Exchanges code for token, saves to database</li>
+            <li><strong>PostMessage sent</strong> - Backend returns HTML with success postMessage</li>
+            <li><strong>Popup closes</strong> - Parent window receives message and popup auto-closes</li>
+            <li><strong>Success logged</strong> - Event appears in log below with full data</li>
+        </ol>
+        
+        <div class="status warning">
+            <strong>Note:</strong> Make sure popup blockers are disabled and you're logged into LinkedIn.
+        </div>
+    </div>
+
+    <script>
+        let messageCount = 0;
+        
+        function addLogEntry(message, type = 'message') {
+            const container = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function setMainStatus(message, type = 'info') {
+            const status = document.getElementById('mainStatus');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function clearLog() {
+            document.getElementById('logContainer').innerHTML = 
+                '<div class="log-entry">Log cleared...</div>';
+            messageCount = 0;
+        }
+        
+        function testLinkedInOAuth() {
+            addLogEntry('🚀 Starting LinkedIn OAuth test...', 'message');
+            setMainStatus('Opening LinkedIn OAuth popup...', 'info');
+            
+            const popup = window.open(
+                'http://localhost:8000/oauth/linkedin/start/',
+                'linkedin_oauth',
+                'width=600,height=700,scrollbars=yes,resizable=yes'
+            );
+            
+            if (!popup) {
+                addLogEntry('❌ Failed to open popup - check popup blocker!', 'error');
+                setMainStatus('Failed to open popup - check popup blocker', 'error');
+                return;
+            }
+            
+            addLogEntry('✅ Popup opened successfully', 'success');
+            
+            // Monitor popup and messages
+            monitorOAuthFlow(popup, 'linkedin');
+        }
+        
+        function testErrorScenario() {
+            addLogEntry('🚀 Testing error scenario...', 'message');
+            setMainStatus('Testing OAuth error handling...', 'info');
+            
+            const popup = window.open(
+                'http://localhost:8000/oauth/linkedin/callback/?error=test_error&error_description=This is a test error',
+                'linkedin_error_test',
+                'width=600,height=500'
+            );
+            
+            if (!popup) {
+                addLogEntry('❌ Failed to open error test popup', 'error');
+                return;
+            }
+            
+            monitorOAuthFlow(popup, 'linkedin-error');
+        }
+        
+        function monitorOAuthFlow(popup, testType) {
+            let messageReceived = false;
+            
+            // Listen for postMessage from popup
+            const messageHandler = (event) => {
+                messageCount++;
+                messageReceived = true;
+                
+                addLogEntry(`📨 PostMessage received (#${messageCount}):`, 'message');
+                
+                if (event.data && typeof event.data === 'object') {
+                    const jsonData = JSON.stringify(event.data, null, 2);
+                    addLogEntry(`<div class="json-display">${jsonData}</div>`, 'message');
+                    
+                    if (event.data.type === 'oauth-success' || event.data.type === 'oauth_success') {
+                        addLogEntry(`🎉 OAuth SUCCESS for ${event.data.provider || 'unknown'}!`, 'success');
+                        setMainStatus(`✅ OAuth completed successfully for ${event.data.provider}!`, 'success');
+                        
+                    } else if (event.data.type === 'oauth-error') {
+                        addLogEntry(`⚠️ OAuth ERROR: ${event.data.error || 'Unknown error'}`, 'error');
+                        setMainStatus(`❌ OAuth failed: ${event.data.error}`, 'error');
+                        
+                    } else {
+                        addLogEntry(`ℹ️ Unknown message type: ${event.data.type}`, 'message');
+                    }
+                } else {
+                    addLogEntry(`📄 Raw message: ${JSON.stringify(event.data)}`, 'message');
+                }
+                
+                // Remove listener after receiving message
+                window.removeEventListener('message', messageHandler);
+            };
+            
+            window.addEventListener('message', messageHandler);
+            
+            // Monitor popup status
+            const popupMonitor = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(popupMonitor);
+                    
+                    if (!messageReceived) {
+                        addLogEntry(`❌ Popup closed without receiving postMessage!`, 'error');
+                        setMainStatus('Popup closed - no backend message received', 'error');
+                        window.removeEventListener('message', messageHandler);
+                    } else {
+                        addLogEntry(`✅ Popup closed after receiving message`, 'success');
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Initialize
+        addLogEntry('📱 OAuth PostMessage test page loaded', 'success');
+        addLogEntry('🔍 Listening for postMessages from OAuth popups...', 'message');
+    </script>
+</body>
+</html>
