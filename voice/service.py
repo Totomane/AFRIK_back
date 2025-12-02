@@ -1,147 +1,102 @@
 # voice/service.py
 import io
+import re
 import numpy as np
 import soundfile as sf
-import torch
 from faster_whisper import WhisperModel
-from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 
 
 class VoiceNavigationService:
     """
-    Speech-to-text: Faster-Whisper
-    Text-to-speech: DIA-1.6B-0626 (English only)
+    Speech-to-text only: Faster-Whisper
+    Note: TTS is now handled by ElevenLabs API in podcast_generator.py
     """
 
     def __init__(self, asr_model_size="base", device=None, compute_type="int8"):
-        # --- Device ---
-        self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
-        print(f"🧠 Using device: {self.device}")
+        # --- Device (CPU/CUDA for whisper only) ---
+        device_str = device or ("cuda" if self._cuda_available() else "cpu")
+        print(f"🧠 Using device for ASR: {device_str}")
 
-        # --- ASR ---
+        # --- ASR (Speech Recognition) ---
         print("🎧 Loading faster-whisper...")
-        self.asr = WhisperModel(asr_model_size, device=str(self.device), compute_type=compute_type)
-
-        # --- DIA TTS ---
-        print("🔊 Loading DIA-1.6B-0626 model (English TTS)...")
-        model_id = "nari-labs/Dia-1.6B-0626"
-        self.processor = AutoProcessor.from_pretrained(model_id)
+        self.asr = WhisperModel(asr_model_size, device=device_str, compute_type=compute_type)
         
-        # Load model without device_map conflict
-        if str(self.device) == "cuda":
-            # For CUDA, use device_map for memory optimization
-            self.tts_model = AutoModelForSpeechSeq2Seq.from_pretrained(
-                model_id, 
-                torch_dtype=torch.float16, 
-                device_map="auto"
-            )
-        else:
-            # For CPU, load normally without device_map
-            self.tts_model = AutoModelForSpeechSeq2Seq.from_pretrained(
-                model_id, 
-                torch_dtype=torch.float32
-            ).to(self.device)
-
+        # Audio format settings (for compatibility)
         self.sample_rate = 16000
         self.channels = 1
+    
+    def _cuda_available(self):
+        """Check if CUDA is available without importing torch"""
+        try:
+            import torch
+            return torch.cuda.is_available()
+        except ImportError:
+            return False
 
     # ---------- STT ----------
     def transcribe(self, audio_bytes: bytes, lang: str = "en"):
+        """Convert audio bytes to text using Faster-Whisper with English-only filtering"""
         audio_buf, sr = sf.read(io.BytesIO(audio_bytes), dtype="float32", always_2d=False)
         if audio_buf.ndim > 1:
             audio_buf = np.mean(audio_buf, axis=1)
-        segments, info = self.asr.transcribe(audio_buf, language=lang, beam_size=1)
-        text = "".join(seg.text for seg in segments).strip()
-        return {"text": text, "duration": info.duration, "language": info.language}
+        
+        segments, info = self.asr.transcribe(
+            audio_buf, 
+            language="en",  # ✅ Force English language
+            beam_size=1,
+            log_prob_threshold=-1.0,
+            no_speech_threshold=0.6
+        )
+        
+        raw_text = "".join(seg.text for seg in segments).strip()
+        clean_text = self._filter_english_only(raw_text)
+        
+        return {"text": clean_text, "duration": info.duration, "language": info.language}
+    
+    def _filter_english_only(self, text: str) -> str:
+        """Filter text to keep only English characters, numbers, and basic punctuation."""
+        # Keep only: letters, numbers, spaces, basic punctuation
+        filtered = re.sub(r'[^a-zA-Z0-9\s\.,!?\'":-]', '', text)
+        
+        # Remove excessive repetition (like e-e-e-e-e-e or 针-针-针)
+        filtered = re.sub(r'([a-zA-Z])-?\1{3,}', r'\1', filtered)
+        
+        # Clean up multiple spaces and dashes
+        filtered = re.sub(r'\s+', ' ', filtered)
+        filtered = re.sub(r'-+', '-', filtered)
+        
+        # Remove standalone single characters that might be noise
+        words = filtered.split()
+        clean_words = []
+        for word in words:
+            # Skip words that are just repetitive characters or too short noise
+            if len(word) > 1 or word.lower() in ['a', 'i']:
+                clean_words.append(word)
+        
+        return ' '.join(clean_words).strip()
 
-    # ---------- TTS ----------
+    # ---------- TTS (Deprecated - Use ElevenLabs API instead) ----------
     def dia_stream(self, text: str, **gen_kwargs):
         """
-        Convert text → PCM16 chunks via DIA-1.6B (English only)
+        DEPRECATED: DIA TTS removed. Use ElevenLabs API in podcast_generator.py instead.
+        This method exists for backward compatibility with WebSocket consumers.
         """
-        inputs = self.processor(text=[text], return_tensors="pt", padding=True)
-        
-        # Move inputs to appropriate device
-        if str(self.device) != "cuda":
-            inputs = inputs.to(self.device)
-            
-        with torch.no_grad():
-            outputs = self.tts_model.generate(
-                **inputs,
-                max_new_tokens=3072,
-                guidance_scale=3.0,
-                temperature=1.8,
-                top_p=0.9,
-                top_k=45,
-                **gen_kwargs,
-            )
-
-        # Decode to audio (float32 numpy)
-        wav_outputs = self.processor.batch_decode(outputs, output_type="audio", sample_rate=self.sample_rate)
-        wav = np.array(wav_outputs[0], dtype=np.float32)
-        pcm16 = np.int16(np.clip(wav, -1, 1) * 32767)
-
-        # Stream in small chunks
-        chunk_size = 4096
-        for i in range(0, len(pcm16), chunk_size):
-            yield pcm16[i:i + chunk_size].tobytes()
+        print("⚠️ WARNING: DIA TTS is deprecated. Use ElevenLabs API for TTS functionality.")
+        # Return empty generator for backward compatibility
+        return iter([])
     
     def synthesize_to_file(self, text: str, output_path: str):
         """
-        Generate speech with DIA TTS and save to file
+        DEPRECATED: Use ElevenLabs API in services/podcast_generator.py for TTS
         """
-        print(f"🔊 Synthesizing with DIA: '{text[:50]}...'")
-        inputs = self.processor(text=[text], return_tensors="pt", padding=True)
-        
-        # Move inputs to appropriate device
-        if str(self.device) != "cuda":
-            inputs = inputs.to(self.device)
-        
-        with torch.no_grad():
-            outputs = self.tts_model.generate(
-                **inputs,
-                max_new_tokens=3072,
-                guidance_scale=3.0,
-                temperature=1.8,
-                top_p=0.9,
-                top_k=45,
-                do_sample=True
-            )
-        
-        # Decode to audio (float32 numpy)
-        wav_outputs = self.processor.batch_decode(outputs, output_type="audio", sample_rate=22050)
-        waveform = np.array(wav_outputs[0], dtype=np.float32)
-        
-        # Save to file
-        sf.write(output_path, waveform, 22050)
-        print(f"✅ Audio saved to: {output_path}")
-        return output_path
+        raise NotImplementedError(
+            "DIA TTS removed. Use ElevenLabs API in services/podcast_generator.py for text-to-speech functionality."
+        )
     
     def synthesize_to_bytes(self, text: str):
         """
-        Generate speech with DIA TTS and return as bytes
+        DEPRECATED: Use ElevenLabs API in services/podcast_generator.py for TTS
         """
-        inputs = self.processor(text=[text], return_tensors="pt", padding=True)
-        
-        # Move inputs to appropriate device
-        if str(self.device) != "cuda":
-            inputs = inputs.to(self.device)
-        
-        with torch.no_grad():
-            outputs = self.tts_model.generate(
-                **inputs,
-                max_new_tokens=3072,
-                guidance_scale=3.0,
-                temperature=1.8,
-                top_p=0.9,
-                top_k=45,
-                do_sample=True
-            )
-        
-        # Decode to audio and convert to bytes
-        wav_outputs = self.processor.batch_decode(outputs, output_type="audio", sample_rate=22050)
-        waveform = np.array(wav_outputs[0], dtype=np.float32)
-        
-        # Convert to PCM16 bytes
-        pcm16 = np.int16(np.clip(waveform, -1, 1) * 32767)
-        return pcm16.tobytes()
+        raise NotImplementedError(
+            "DIA TTS removed. Use ElevenLabs API in services/podcast_generator.py for text-to-speech functionality."
+        )

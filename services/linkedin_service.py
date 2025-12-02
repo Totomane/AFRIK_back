@@ -5,6 +5,7 @@ import time
 import mimetypes
 from typing import Dict, Any, Optional, List
 from django.utils import timezone
+from oauth.token_manager import TokenManager
 
 
 class LinkedInService:
@@ -54,15 +55,31 @@ class LinkedInService:
         'sustainability': ['#Sustainability', '#ESG', '#ClimateAction', '#GreenBusiness']
     }
     
-    def __init__(self, access_token: str):
-        self.access_token = access_token
+    def __init__(self, access_token: str = None, user_id: str = None):
+        # Initialize token manager first
+        self.token_manager = TokenManager()
+        
+        # Get valid token - either from parameter or refresh existing
+        if access_token:
+            self.access_token = access_token
+        elif user_id:
+            # Try to get refreshed token for this user
+            token_response = self.token_manager.get_valid_token(user_id, 'linkedin')
+            if token_response and token_response.get('success'):
+                self.access_token = token_response['token']
+            else:
+                raise ValueError("No valid LinkedIn token available for user")
+        else:
+            raise ValueError("Either access_token or user_id must be provided")
+        
         self.headers = {
-            'Authorization': f'Bearer {access_token}',
+            'Authorization': f'Bearer {self.access_token}',
             'Content-Type': 'application/json',
             'X-Restli-Protocol-Version': '2.0.0',
         }
         self.member_urn = None
-        print(f"LinkedIn service initialized with token: {access_token[:20]}...")
+        self.user_id = user_id
+        print(f"LinkedIn service initialized with token: {self.access_token[:20]}...")
         
         # Get member URN on initialization
         self._get_member_profile()
@@ -127,6 +144,32 @@ class LinkedInService:
                 }
         except Exception as e:
             return {"valid": False, "error": str(e)}
+    
+    def _refresh_token_if_needed(self) -> bool:
+        """Refresh token if current one is invalid and update headers"""
+        if not self.user_id:
+            return False
+            
+        try:
+            # Try to refresh token
+            refresh_result = self.token_manager.get_valid_token(self.user_id, 'linkedin')
+            
+            if refresh_result and refresh_result.get('success'):
+                new_token = refresh_result['token']
+                
+                # Update instance variables
+                self.access_token = new_token
+                self.headers['Authorization'] = f'Bearer {new_token}'
+                
+                print(f"✅ LinkedIn token refreshed successfully")
+                return True
+            else:
+                print(f"❌ Failed to refresh LinkedIn token: {refresh_result}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error refreshing LinkedIn token: {str(e)}")
+            return False
     
     def _register_upload(self, media_type: str, file_size: int = None) -> Dict[str, Any]:
         """Register an upload with LinkedIn and get upload URL"""
@@ -382,6 +425,26 @@ class LinkedInService:
                 json=ugc_payload,
                 timeout=30
             )
+            
+            # Handle token refresh on authorization errors
+            if response.status_code == 401 and self.user_id:
+                print("🔄 LinkedIn token expired, attempting refresh...")
+                if self._refresh_token_if_needed():
+                    # Retry with new token
+                    print("🔄 Retrying LinkedIn post with refreshed token...")
+                    response = requests.post(
+                        self.UGC_POSTS_URL,
+                        headers=self.headers,
+                        json=ugc_payload,
+                        timeout=30
+                    )
+                else:
+                    return {
+                        "success": False,
+                        "error": "LinkedIn token expired and refresh failed. Please reconnect your LinkedIn account.",
+                        "status_code": 401,
+                        "requires_reauth": True
+                    }
             
             if response.status_code in [200, 201]:
                 result = response.json()

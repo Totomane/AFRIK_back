@@ -43,6 +43,12 @@ class TTSConsumer(AsyncWebsocketConsumer):
         await self.send_json({"type": "end"})
 
     async def _stream_dia(self, text: str, speed: float):
-        gen = _service.dia_stream(text=text)
+        """
+        DEPRECATED: DIA TTS removed. 
+        Consider integrating ElevenLabs API for WebSocket TTS functionality.
+        """
+        print("⚠️ WARNING: TTS via WebSocket is deprecated. Use ElevenLabs API instead.")
+        # Return empty generator - no audio will be streamed
+        gen = _service.dia_stream(text=text)  # Returns empty generator
         for chunk in await sync_to_async(list)(gen):
             yield chunk

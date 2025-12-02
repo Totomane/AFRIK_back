@@ -16,7 +16,7 @@ def publish_media(self, pub_id):
         if pub.provider == 'youtube':
             svc = YouTubeService(token.__dict__)
         elif pub.provider == 'linkedin':
-            svc = LinkedInService(token.access_token)
+            svc = LinkedInService(access_token=token.access_token, user_id=str(token.user.id))
         elif pub.provider == 'x':
             svc = XService(token.access_token)
         else:

@@ -10,8 +10,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('reports/', include('reports.urls')),
-    # path("voice/", include("voice.urls")),  # Temporarily disabled
-    # path("voicecmd/", include("voice.voicecmd_urls")),  # Temporarily disabled
+    path("voice/", include("voice.urls")),  # ✅ Re-enabled voice endpoints
+    path("voicecmd/", include("voice.voicecmd_urls")),  # ✅ Re-enabled voice command endpoints
     path("oauth/", include("oauth.urls")),
     path('counter/', CounterView.as_view(), name='counter'),
     path('api/auth/', include('accounts.urls')),
@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/oauth/disconnect/<str:provider>/', oauth_views.disconnect_account),
     path('api/oauth/account/<str:provider>/', oauth_views.account_details),
     path('api/oauth/refresh/<str:provider>/', oauth_views.refresh_oauth_token),
+    path('api/oauth/status/<str:provider>/', oauth_views.get_token_status),
     path('api/oauth/repair/<str:provider>/', oauth_views.repair_connection),
     path('api/oauth/diagnostics/<str:provider>/', oauth_views.connection_diagnostics),
     # Test pages

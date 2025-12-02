@@ -1,13 +1,13 @@
 import os, tempfile
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from services.voice_flow_service import VoiceFlowManager
 from services.speech_recognition_service import SpeechRecognitionService
 
 voice_flow = VoiceFlowManager()
 speech_service = SpeechRecognitionService(model_size="base", device="cpu")
 
-@csrf_protect
+@csrf_exempt
 def start_conversation(request):
     """Start a new voice conversation."""
     if request.method != "GET":
@@ -15,7 +15,7 @@ def start_conversation(request):
     session = voice_flow.start_session()
     return JsonResponse(session)
 
-@csrf_protect
+@csrf_exempt
 def continue_conversation(request, session_id):
     """Continue the conversation (handles audio + flow logic)."""
     if request.method != "POST" or "audio" not in request.FILES:

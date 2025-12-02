@@ -1,11 +1,17 @@
 # Core Django backend
 authlib==1.6.5
+cryptography>=3.4.8         # ✅ Required by authlib for JWT/OAuth functionality
 celery
 Django>=5.0
 django-cors-headers>=4.0.0
 djangorestframework>=3.15.0
 spacy>=3.5
+thinc>=8.0.0                 # ✅ Required by spaCy
 en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0.tar.gz
+
+# AI/ML Dependencies - REMOVED (No longer using DIA TTS)
+# torch>=2.4.1              # ❌ REMOVED - Was required by DIA TTS (now using ElevenLabs API)
+# transformers>=4.44.2      # ❌ REMOVED - Was required by DIA TTS (now using ElevenLabs API)
 
 # Voice processing (Windows-compatible - no Rust required)
 soundfile                # ✅ Used in voice/views.py and voice/service.py
@@ -23,8 +29,14 @@ requests                 # ✅ Used for API calls (Groq, World Bank, ElevenLabs)
 python-multipart         # ✅ Used for file uploads in Django
 
 # Voice recognition - Currently causing dependency conflicts  
-faster-whisper==1.0.1  # ❌ Requires ctranslate2, causing issues on Windows
-ctranslate2>=4    # ❌ Requires Rust compilation, causing conflicts
+faster-whisper==1.0.1  # ✅ Working after installing dependencies
+ctranslate2>=4    # ✅ Working after installing PyYAML dependency
+PyYAML>=5.4.0           # ✅ Required by ctranslate2
+tokenizers>=0.13.0      # ✅ Required by faster-whisper for tokenization
+huggingface-hub>=0.20.0 # ✅ For downloading models from Hugging Face
+av>=12.0.0              # ✅ Audio/video processing library
+librosa>=0.10.0         # ✅ Audio analysis library
+setuptools<81           # ✅ Pin setuptools to avoid pkg_resources warnings
 ffmpeg-python           # ✅ Used for audio conversion in podcast_generator.py
 # pydub                 # ❌ Replaced with soundfile - pydub has Python 3.13 compatibility issues (audioop)
 

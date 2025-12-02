@@ -86,7 +86,7 @@ def register_oauth_clients():
                 authorize_url='https://www.linkedin.com/oauth/v2/authorization',
                 access_token_url='https://www.linkedin.com/oauth/v2/accessToken',
                 client_kwargs={
-                    'scope': 'w_member_social',
+                    'scope': 'w_member_social r_liteprofile r_emailaddress',  # ✅ Added missing scopes
                 },
                 token_endpoint_auth_method='client_secret_post',
             )

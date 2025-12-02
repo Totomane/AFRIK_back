@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'api',
     # 'django_ratelimit',  # Temporarily disabled due to cache issues
     'reports',
-    # "voice",  # Temporarily disabled due to import issues
+    "voice",  # ✅ Re-enabled voice app - import issues resolved
     "oauth",
     "channels",
 ]

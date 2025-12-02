@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 
 from .utils import oauth
 from .models import SocialToken
+from .token_manager import TokenManager
 
 User = get_user_model()
 
@@ -1027,3 +1028,77 @@ def connection_diagnostics(request, provider):
             "error": str(e),
             "message": f"Diagnostics failed for {provider}"
         }, status=500)
+
+
+# ---------- Professional Token Management ----------
+
+def refresh_oauth_token(request, provider):
+    """
+    Professional automatic token refresh endpoint
+    """
+    print(f"🔄 [OAUTH] Token refresh requested for {provider}")
+    
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"success": False, "message": "Authentication required"},
+            status=401
+        )
+    
+    try:
+        # Get valid token (automatically refreshes if needed)
+        token_obj = TokenManager.get_valid_token(request.user, provider)
+        
+        return JsonResponse({
+            "success": True,
+            "message": f"Token is valid for {provider}",
+            "expires_at": token_obj.expires_at.isoformat() if token_obj.expires_at else None,
+            "scopes": token_obj.scopes,
+            "last_updated": token_obj.updated_at.isoformat()
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e),
+            "message": f"Token refresh failed for {provider}",
+            "requires_reauth": True
+        }, status=401)
+
+
+def get_token_status(request, provider):
+    """
+    Check token status without forcing refresh
+    """
+    print(f"📊 [OAUTH] Token status check for {provider}")
+    
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"success": False, "message": "Authentication required"},
+            status=401
+        )
+    
+    try:
+        token_obj = SocialToken.objects.get(
+            user=request.user, 
+            provider=provider, 
+            is_active=True
+        )
+        
+        is_expired = TokenManager.is_token_expired(token_obj)
+        
+        return JsonResponse({
+            "success": True,
+            "is_expired": is_expired,
+            "expires_at": token_obj.expires_at.isoformat() if token_obj.expires_at else None,
+            "has_refresh_token": bool(token_obj.refresh_token),
+            "scopes": token_obj.scopes,
+            "created_at": token_obj.created_at.isoformat(),
+            "updated_at": token_obj.updated_at.isoformat()
+        })
+        
+    except SocialToken.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "message": f"No active token found for {provider}",
+            "requires_auth": True
+        }, status=404)

@@ -728,8 +728,8 @@ class SocialMediaShareView(APIView):
                     return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
             
             elif provider == 'linkedin':
-                # LinkedIn professional posting
-                linkedin_service = LinkedInService(token.access_token)
+                # LinkedIn professional posting with automatic token refresh
+                linkedin_service = LinkedInService(access_token=token.access_token, user_id=str(request.user.id))
                 
                 # Validate token before posting
                 print("Validating LinkedIn OAuth token...")
